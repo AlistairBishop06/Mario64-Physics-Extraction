@@ -24,8 +24,12 @@ private:
     mario::MarioInput pollInput(bool& quit);
     void registerConsoleCommands();
     void buildDebugDraw();
+    bool initializeAudio();
+    void pumpAudio();
+    void shutdownAudio();
 
     SDL_Window* window_ = nullptr;
+    SDL_AudioDeviceID audioDevice_ = 0;
     rendering::Renderer renderer_;
     rendering::DebugRenderer debugRenderer_;
     physics::PhysicsWorld world_;
@@ -37,6 +41,9 @@ private:
     replay::ReplayTrack ghost_;
     assets::RuntimeAssets runtimeAssets_;
     mario::LibSm64Backend libSm64_;
+    float cameraOrbitInput_ = 0.0f;
+    float cameraZoomInput_ = 0.0f;
+    double audioAccumulator_ = 0.0;
 };
 
 } // namespace sm64ps

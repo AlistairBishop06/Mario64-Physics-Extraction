@@ -5,6 +5,7 @@
 #include <SDL_opengl.h>
 
 #include <algorithm>
+#include <cmath>
 
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
@@ -93,11 +94,30 @@ void Renderer::setMarioTexture(const std::vector<std::uint8_t>& rgba, int width,
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void Renderer::followMarioCamera(const mario::MarioBody& body)
+void Renderer::updateLakituCamera(const mario::MarioBody& body, float orbitInput, float zoomInput)
 {
+    constexpr float kPi = 3.14159265f;
     const glm::vec3 forward = mario::yawToForward(body.faceYaw);
-    const glm::vec3 desiredTarget = body.position + glm::vec3(0.0f, 105.0f, 0.0f);
-    const glm::vec3 desiredPosition = desiredTarget - forward * 850.0f + glm::vec3(0.0f, 260.0f, 0.0f);
+    const float behindYaw = std::atan2(-forward.x, -forward.z);
+    const float speed = mario::horizontalMagnitude(body.velocity);
+
+    cameraYaw_ += orbitInput * 0.055f;
+    if (std::abs(orbitInput) < 0.01f && speed > 12.0f) {
+        float delta = behindYaw - cameraYaw_;
+        while (delta > kPi) {
+            delta -= kPi * 2.0f;
+        }
+        while (delta < -kPi) {
+            delta += kPi * 2.0f;
+        }
+        cameraYaw_ += delta * 0.018f;
+    }
+
+    cameraDistance_ = std::clamp(cameraDistance_ + zoomInput * 18.0f, 650.0f, 1600.0f);
+
+    const glm::vec3 fromTarget(std::sin(cameraYaw_) * cameraDistance_, 0.0f, std::cos(cameraYaw_) * cameraDistance_);
+    const glm::vec3 desiredTarget = body.position + glm::vec3(0.0f, 115.0f, 0.0f);
+    const glm::vec3 desiredPosition = desiredTarget + fromTarget + glm::vec3(0.0f, 280.0f, 0.0f);
 
     if (!cameraInitialized_) {
         cameraTarget_ = desiredTarget;
@@ -107,7 +127,17 @@ void Renderer::followMarioCamera(const mario::MarioBody& body)
     }
 
     cameraTarget_ += (desiredTarget - cameraTarget_) * 0.18f;
-    cameraPosition_ += (desiredPosition - cameraPosition_) * 0.10f;
+    cameraPosition_ += (desiredPosition - cameraPosition_) * 0.12f;
+}
+
+glm::vec3 Renderer::cameraLookDirection() const
+{
+    glm::vec3 look = cameraTarget_ - cameraPosition_;
+    look.y = 0.0f;
+    if (glm::length(look) < 0.001f) {
+        return { 0.0f, 0.0f, 1.0f };
+    }
+    return glm::normalize(look);
 }
 
 void Renderer::beginFrame(int width, int height)

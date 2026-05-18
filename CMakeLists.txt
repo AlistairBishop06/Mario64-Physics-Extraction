@@ -134,6 +134,10 @@ if(SM64PS_BUILD_APP)
         COMMAND ${CMAKE_COMMAND} -E copy_directory
             ${CMAKE_SOURCE_DIR}/configs
             $<TARGET_FILE_DIR:sm64_physics_sandbox>/configs
+        COMMAND ${CMAKE_COMMAND}
+            -D SRC=${CMAKE_SOURCE_DIR}/third_party/libsm64/dist/sm64.dll
+            -D DST=$<TARGET_FILE_DIR:sm64_physics_sandbox>/sm64.dll
+            -P ${CMAKE_SOURCE_DIR}/cmake/CopyIfExists.cmake
     )
 endif()
 

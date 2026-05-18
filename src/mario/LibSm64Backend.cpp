@@ -95,6 +95,8 @@ struct LibSm64Backend::Api {
     using MarioCreate = std::int32_t (*)(float, float, float);
     using MarioTick = void (*)(std::int32_t, const SM64MarioInputs*, SM64MarioState*, SM64MarioGeometryBuffers*);
     using MarioDelete = void (*)(std::int32_t);
+    using AudioInit = void (*)(const std::uint8_t*);
+    using AudioTick = std::uint32_t (*)(std::uint32_t, std::uint32_t, std::int16_t*);
 
     GlobalInit globalInit = nullptr;
     GlobalTerminate globalTerminate = nullptr;
@@ -102,6 +104,8 @@ struct LibSm64Backend::Api {
     MarioCreate marioCreate = nullptr;
     MarioTick marioTick = nullptr;
     MarioDelete marioDelete = nullptr;
+    AudioInit audioInit = nullptr;
+    AudioTick audioTick = nullptr;
 };
 
 LibSm64Backend::~LibSm64Backend()
@@ -159,9 +163,34 @@ void LibSm64Backend::shutdown()
     }
     marioId_ = -1;
     active_ = false;
+    audioActive_ = false;
     delete api_;
     api_ = nullptr;
     unloadLibrary();
+}
+
+bool LibSm64Backend::initializeAudio()
+{
+    if (!active_ || !api_ || !api_->audioInit || !api_->audioTick || romBytes_.empty()) {
+        return false;
+    }
+
+    api_->audioInit(romBytes_.data());
+    audioActive_ = true;
+    return true;
+}
+
+std::uint32_t LibSm64Backend::tickAudio(std::uint32_t queuedSamples, std::uint32_t desiredSamples, std::vector<std::int16_t>& outSamples)
+{
+    if (!audioActive_ || !api_ || !api_->audioTick) {
+        outSamples.clear();
+        return 0;
+    }
+
+    outSamples.assign(544 * 2 * 2, 0);
+    const std::uint32_t samples = api_->audioTick(queuedSamples, desiredSamples, outSamples.data());
+    outSamples.resize(static_cast<std::size_t>(samples) * 2U * 2U);
+    return samples;
 }
 
 void LibSm64Backend::setCameraLook(glm::vec3 look)
@@ -307,6 +336,8 @@ bool LibSm64Backend::bindApi()
     api_->marioCreate = reinterpret_cast<Api::MarioCreate>(loadSymbol(library_, "sm64_mario_create"));
     api_->marioTick = reinterpret_cast<Api::MarioTick>(loadSymbol(library_, "sm64_mario_tick"));
     api_->marioDelete = reinterpret_cast<Api::MarioDelete>(loadSymbol(library_, "sm64_mario_delete"));
+    api_->audioInit = reinterpret_cast<Api::AudioInit>(loadSymbol(library_, "sm64_audio_init"));
+    api_->audioTick = reinterpret_cast<Api::AudioTick>(loadSymbol(library_, "sm64_audio_tick"));
 
     return api_->globalInit && api_->globalTerminate && api_->staticSurfacesLoad
         && api_->marioCreate && api_->marioTick && api_->marioDelete;

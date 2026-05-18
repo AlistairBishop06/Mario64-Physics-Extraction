@@ -22,8 +22,11 @@ public:
     void setCameraLook(glm::vec3 look);
     void tick(const MarioInput& input);
     void syncBody(MarioBody& body) const;
+    bool initializeAudio();
+    std::uint32_t tickAudio(std::uint32_t queuedSamples, std::uint32_t desiredSamples, std::vector<std::int16_t>& outSamples);
 
     bool active() const { return active_; }
+    bool audioActive() const { return audioActive_; }
     const std::string& status() const { return status_; }
     const assets::Mesh& mesh() const { return mesh_; }
     const std::vector<std::uint8_t>& textureRgba() const { return textureRgba_; }
@@ -42,6 +45,7 @@ private:
     void* library_ = nullptr;
     Api* api_ = nullptr;
     bool active_ = false;
+    bool audioActive_ = false;
     int marioId_ = -1;
     std::string status_ = "libsm64 backend not initialized";
 

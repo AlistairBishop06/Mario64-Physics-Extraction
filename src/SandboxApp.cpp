@@ -9,19 +9,112 @@
 #include <imgui_impl_opengl3.h>
 #include <imgui_impl_sdl2.h>
 
+#include <algorithm>
 #include <chrono>
+#include <cstdint>
 #include <cstdlib>
 #include <exception>
+#include <filesystem>
+#include <optional>
 #include <string>
+#include <vector>
 
 #include <glm/geometric.hpp>
 
 namespace sm64ps {
 
+namespace {
+
+std::filesystem::path executableDirectory()
+{
+    char* basePath = SDL_GetBasePath();
+    if (!basePath) {
+        return std::filesystem::current_path();
+    }
+
+    std::filesystem::path path(basePath);
+    SDL_free(basePath);
+    return path;
+}
+
+std::vector<std::filesystem::path> searchRoots()
+{
+    const std::filesystem::path exeDir = executableDirectory();
+    return {
+        exeDir,
+        exeDir / "..",
+        exeDir / ".." / "..",
+        std::filesystem::current_path(),
+    };
+}
+
+std::optional<std::filesystem::path> findFirstExisting(const std::vector<std::filesystem::path>& candidates)
+{
+    for (const auto& candidate : candidates) {
+        const auto normalized = std::filesystem::weakly_canonical(candidate);
+        if (std::filesystem::exists(normalized)) {
+            return normalized;
+        }
+    }
+    return std::nullopt;
+}
+
+std::filesystem::path findConfigPath()
+{
+    std::vector<std::filesystem::path> candidates;
+    for (const auto& root : searchRoots()) {
+        candidates.push_back(root / "configs" / "default.json");
+    }
+    return findFirstExisting(candidates).value_or("configs/default.json");
+}
+
+std::filesystem::path findExtractedDirectory()
+{
+    std::vector<std::filesystem::path> candidates;
+    for (const auto& root : searchRoots()) {
+        candidates.push_back(root / "extracted");
+    }
+    return findFirstExisting(candidates).value_or("extracted");
+}
+
+std::filesystem::path findLibSm64Dll()
+{
+    std::vector<std::filesystem::path> candidates;
+    for (const auto& root : searchRoots()) {
+        candidates.push_back(root / "sm64.dll");
+        candidates.push_back(root / "third_party" / "libsm64" / "dist" / "sm64.dll");
+    }
+    return findFirstExisting(candidates).value_or(mario::LibSm64Backend::findDefaultLibrary());
+}
+
+std::filesystem::path findRomPath()
+{
+    for (const auto& root : searchRoots()) {
+        const auto romDirectory = std::filesystem::weakly_canonical(root / "roms");
+        if (!std::filesystem::exists(romDirectory)) {
+            continue;
+        }
+
+        for (const auto& entry : std::filesystem::directory_iterator(romDirectory)) {
+            if (!entry.is_regular_file()) {
+                continue;
+            }
+            const std::string extension = entry.path().extension().string();
+            if (extension == ".z64" || extension == ".n64" || extension == ".v64") {
+                return entry.path();
+            }
+        }
+    }
+
+    return mario::LibSm64Backend::findDefaultRom();
+}
+
+} // namespace
+
 bool SandboxApp::initialize()
 {
     SDL_SetMainReady();
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0) {
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER | SDL_INIT_AUDIO) != 0) {
         util::logError("SDL_Init failed: ", SDL_GetError());
         return false;
     }
@@ -50,7 +143,7 @@ bool SandboxApp::initialize()
     ImGui_ImplOpenGL3_Init("#version 120");
 
     util::Config config;
-    if (config.load("configs/default.json")) {
+    if (config.load(findConfigPath())) {
         tweaks_.setNumber("walk_speed", config.value("/movement/walk_speed", 12.0));
         tweaks_.setNumber("run_speed", config.value("/movement/run_speed", 32.0));
         tweaks_.setNumber("ground_accel", config.value("/movement/ground_accel", 2.4));
@@ -63,11 +156,12 @@ bool SandboxApp::initialize()
         tweaks_.setNumber("dive_forward_speed", config.value("/movement/dive_forward_speed", 52.0));
     }
     tweaks_.applyTo(world_.marioController().tuning());
-    runtimeAssets_.loadFromDirectory("extracted");
-    const auto libSm64Path = mario::LibSm64Backend::findDefaultLibrary();
-    const auto libSm64Rom = mario::LibSm64Backend::findDefaultRom();
+    runtimeAssets_.loadFromDirectory(findExtractedDirectory());
+    const auto libSm64Path = findLibSm64Dll();
+    const auto libSm64Rom = findRomPath();
     if (libSm64_.initialize(libSm64Path, libSm64Rom, world_.collisionWorld())) {
         renderer_.setMarioTexture(libSm64_.textureRgba(), 64 * 11, 64);
+        initializeAudio();
     } else {
         util::logWarn(libSm64_.status());
     }
@@ -87,13 +181,14 @@ int SandboxApp::run()
         previous = now;
 
         mario::MarioInput input = pollInput(quit);
+        renderer_.updateLakituCamera(world_.marioBody(), cameraOrbitInput_, cameraZoomInput_);
 
         const bool shouldStep = !debugState_.paused || debugState_.frameStepRequested;
         if (shouldStep) {
             timestep_.advance(elapsed, [&](float dt) {
                 if (libSm64_.active()) {
                     (void)dt;
-                    libSm64_.setCameraLook(mario::yawToForward(world_.marioBody().faceYaw));
+                    libSm64_.setCameraLook(renderer_.cameraLookDirection());
                     libSm64_.tick(input);
                     libSm64_.syncBody(world_.marioBody());
                     world_.advanceFrame();
@@ -105,6 +200,11 @@ int SandboxApp::run()
                 }
             });
             debugState_.frameStepRequested = false;
+        }
+        audioAccumulator_ += elapsed;
+        while (audioAccumulator_ >= 1.0 / 30.0) {
+            pumpAudio();
+            audioAccumulator_ -= 1.0 / 30.0;
         }
 
         buildDebugDraw();
@@ -118,7 +218,6 @@ int SandboxApp::run()
         int width = 0;
         int height = 0;
         SDL_GetWindowSize(window_, &width, &height);
-        renderer_.followMarioCamera(world_.marioBody());
         renderer_.beginFrame(width, height);
         if (debugState_.drawCollision) {
             renderer_.drawCollision(world_.collisionWorld());
@@ -137,6 +236,7 @@ int SandboxApp::run()
 
 void SandboxApp::shutdown()
 {
+    shutdownAudio();
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext();
@@ -172,6 +272,11 @@ mario::MarioInput SandboxApp::pollInput(bool& quit)
     input.jumpPressed = keys[SDL_SCANCODE_SPACE] != 0;
     input.crouchHeld = keys[SDL_SCANCODE_LCTRL] != 0 || keys[SDL_SCANCODE_RCTRL] != 0;
     input.attackPressed = keys[SDL_SCANCODE_LSHIFT] != 0 || keys[SDL_SCANCODE_RSHIFT] != 0;
+
+    cameraOrbitInput_ = (keys[SDL_SCANCODE_E] ? 1.0f : 0.0f) - (keys[SDL_SCANCODE_Q] ? 1.0f : 0.0f);
+    cameraOrbitInput_ += (keys[SDL_SCANCODE_RIGHT] ? 1.0f : 0.0f) - (keys[SDL_SCANCODE_LEFT] ? 1.0f : 0.0f);
+    cameraOrbitInput_ = std::clamp(cameraOrbitInput_, -1.0f, 1.0f);
+    cameraZoomInput_ = (keys[SDL_SCANCODE_DOWN] ? 1.0f : 0.0f) - (keys[SDL_SCANCODE_UP] ? 1.0f : 0.0f);
     return input;
 }
 
@@ -232,6 +337,61 @@ void SandboxApp::buildDebugDraw()
         if (body.touchedWall) {
             debugRenderer_.normal(body.position, body.wallNormal, { 1.0f, 0.2f, 0.8f }, 12.0f);
         }
+    }
+}
+
+bool SandboxApp::initializeAudio()
+{
+    if (!libSm64_.initializeAudio()) {
+        util::logWarn("libsm64 audio initialization failed");
+        return false;
+    }
+
+    SDL_AudioSpec want {};
+    want.freq = 32000;
+    want.format = AUDIO_S16SYS;
+    want.channels = 2;
+    want.samples = 512;
+    want.callback = nullptr;
+
+    SDL_AudioSpec have {};
+    audioDevice_ = SDL_OpenAudioDevice(nullptr, 0, &want, &have, 0);
+    if (audioDevice_ == 0) {
+        util::logWarn("SDL_OpenAudioDevice failed: ", SDL_GetError());
+        return false;
+    }
+
+    SDL_PauseAudioDevice(audioDevice_, 0);
+    util::logInfo("SM64 audio initialized at ", have.freq, " Hz");
+    return true;
+}
+
+void SandboxApp::pumpAudio()
+{
+    if (audioDevice_ == 0 || !libSm64_.audioActive()) {
+        return;
+    }
+
+    const std::uint32_t queuedSamples = SDL_GetQueuedAudioSize(audioDevice_) / 4U;
+    if (queuedSamples >= 6000U) {
+        return;
+    }
+
+    std::vector<std::int16_t> samples;
+    const std::uint32_t generatedSamples = libSm64_.tickAudio(queuedSamples, 1100U, samples);
+    if (generatedSamples == 0 || samples.empty()) {
+        return;
+    }
+
+    SDL_QueueAudio(audioDevice_, samples.data(), static_cast<Uint32>(samples.size() * sizeof(std::int16_t)));
+}
+
+void SandboxApp::shutdownAudio()
+{
+    if (audioDevice_ != 0) {
+        SDL_ClearQueuedAudio(audioDevice_);
+        SDL_CloseAudioDevice(audioDevice_);
+        audioDevice_ = 0;
     }
 }
 

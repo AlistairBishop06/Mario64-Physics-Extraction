@@ -34,7 +34,7 @@ struct MarioInput {
 };
 
 struct MarioBody {
-    glm::vec3 position { 0.0f, 20.0f, 0.0f };
+    glm::vec3 position { 0.0f, 0.0f, 0.0f };
     glm::vec3 velocity { 0.0f, 0.0f, 0.0f };
     glm::vec3 floorNormal { 0.0f, 1.0f, 0.0f };
     glm::vec3 wallNormal { 0.0f, 0.0f, 0.0f };
@@ -51,4 +51,3 @@ struct MarioBody {
 std::string_view actionName(Action action);
 
 } // namespace sm64ps::mario
-

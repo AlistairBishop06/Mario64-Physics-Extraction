@@ -155,4 +155,10 @@ if(SM64PS_BUILD_TESTS)
     )
     target_link_libraries(sm64ps_replay_tests PRIVATE sm64ps_core sm64ps_project_warnings)
     add_test(NAME replay_serialization COMMAND sm64ps_replay_tests)
+
+    add_executable(sm64ps_collision_tests
+        tests/collision_tests.cpp
+    )
+    target_link_libraries(sm64ps_collision_tests PRIVATE sm64ps_core sm64ps_project_warnings)
+    add_test(NAME collision COMMAND sm64ps_collision_tests)
 endif()

@@ -64,10 +64,19 @@ void MarioController::update(MarioBody& body, const MarioInput& input, const col
         applyAirMovement(body, input, dt);
     }
 
+    const glm::vec3 previousPosition = body.position;
     body.velocity.y = std::max(body.velocity.y + tuning_.gravity * dt * 30.0f, tuning_.terminalVelocity);
     body.position += body.velocity * dt;
 
-    const auto postContact = collisionWorld.resolveCharacter(body.position, tuning_.characterRadius, tuning_.characterHeight);
+    auto postContact = collisionWorld.resolveCharacter(body.position, tuning_.characterRadius, tuning_.characterHeight);
+    if (!postContact.onFloor && body.velocity.y <= 0.0f) {
+        const float fallDistance = std::max(previousPosition.y - body.position.y, 0.0f);
+        if (auto floor = collisionWorld.findFloor(body.position, fallDistance + 8.0f)) {
+            postContact.floor = floor;
+            postContact.onFloor = true;
+            postContact.correctedPosition.y = floor->point.y;
+        }
+    }
     body.position = postContact.correctedPosition;
     body.grounded = postContact.onFloor;
     body.touchedWall = postContact.hitWall;
@@ -189,4 +198,3 @@ void MarioController::applyJumpImpulse(MarioBody& body, Action newAction) const
 }
 
 } // namespace sm64ps::mario
-

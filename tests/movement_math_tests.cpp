@@ -27,4 +27,3 @@ int main()
     std::cout << "movement math tests passed\n";
     return 0;
 }
-

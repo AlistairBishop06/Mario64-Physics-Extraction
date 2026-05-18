@@ -30,8 +30,7 @@ bool Renderer::initialize(SDL_Window* window)
 
     SDL_GL_SetSwapInterval(1);
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
+    glDisable(GL_CULL_FACE);
     return true;
 }
 
@@ -52,12 +51,11 @@ void Renderer::beginFrame(int width, int height)
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     const float aspect = height > 0 ? static_cast<float>(width) / static_cast<float>(height) : 1.0f;
-    glOrtho(-120.0f * aspect, 120.0f * aspect, -20.0f, 160.0f, -300.0f, 300.0f);
+    glOrtho(-145.0f * aspect, 145.0f * aspect, -145.0f, 145.0f, -220.0f, 220.0f);
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    glRotatef(55.0f, 1.0f, 0.0f, 0.0f);
-    glTranslatef(0.0f, -35.0f, -80.0f);
+    glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
 }
 
 void Renderer::drawCollision(const collision::CollisionWorld& collisionWorld)

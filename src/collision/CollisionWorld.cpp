@@ -111,7 +111,7 @@ std::optional<SurfaceContact> CollisionWorld::findFloor(const glm::vec3& positio
 
         const float floorY = yOnPlane(triangle, position);
         const float distance = position.y - floorY;
-        if (distance >= -0.05f && distance <= snapDistance && distance < bestDistance) {
+        if (distance >= -snapDistance && distance <= snapDistance && distance < bestDistance) {
             bestDistance = distance;
             best = SurfaceContact { &triangle, glm::vec3(position.x, floorY, position.z), triangle.normal, distance };
         }

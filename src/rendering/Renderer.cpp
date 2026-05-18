@@ -48,6 +48,13 @@ void drawBox(const glm::vec3& center, const glm::vec3& halfExtents, const glm::v
     glEnd();
 }
 
+void drawTriangle(const assets::TestMapTriangle& triangle)
+{
+    vertex(triangle.a);
+    vertex(triangle.b);
+    vertex(triangle.c);
+}
+
 } // namespace
 
 bool Renderer::initialize(SDL_Window* window)
@@ -158,6 +165,51 @@ void Renderer::beginFrame(int width, int height)
         cameraTarget_,
         glm::vec3(0.0f, 1.0f, 0.0f));
     glLoadMatrixf(glm::value_ptr(view));
+}
+
+void Renderer::drawMap(const assets::TestMap& map, const MapRenderOptions& options)
+{
+    if (options.solid) {
+        glEnable(GL_POLYGON_OFFSET_FILL);
+        glPolygonOffset(1.0f, 1.0f);
+        glBegin(GL_TRIANGLES);
+        for (const auto& mesh : map.meshes()) {
+            for (const auto& triangle : mesh.triangles) {
+                const glm::vec3 color = options.surfaceColors ? triangle.color : glm::vec3(0.38f, 0.42f, 0.46f);
+                setColor(color);
+                drawTriangle(triangle);
+            }
+        }
+        glEnd();
+        glDisable(GL_POLYGON_OFFSET_FILL);
+    }
+
+    if (options.wireframe) {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        glBegin(GL_TRIANGLES);
+        for (const auto& mesh : map.meshes()) {
+            for (const auto& triangle : mesh.triangles) {
+                setColor({ 0.72f, 0.78f, 0.86f });
+                drawTriangle(triangle);
+            }
+        }
+        glEnd();
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    }
+
+    if (options.triangleNormals) {
+        glBegin(GL_LINES);
+        for (const auto& mesh : map.meshes()) {
+            for (const auto& triangle : mesh.triangles) {
+                const glm::vec3 normal = glm::normalize(glm::cross(triangle.b - triangle.a, triangle.c - triangle.a));
+                const glm::vec3 center = (triangle.a + triangle.b + triangle.c) / 3.0f;
+                setColor({ 1.0f, 0.85f, 0.10f });
+                vertex(center);
+                vertex(center + normal * 85.0f);
+            }
+        }
+        glEnd();
+    }
 }
 
 void Renderer::drawCollision(const collision::CollisionWorld& collisionWorld)

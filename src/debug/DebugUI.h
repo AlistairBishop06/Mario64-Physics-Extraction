@@ -1,5 +1,6 @@
 #pragma once
 
+#include "assets/TestMap.h"
 #include "debug/Console.h"
 #include "debug/TweakVars.h"
 #include "physics/PhysicsWorld.h"
@@ -14,11 +15,17 @@ struct DebugUiState {
     bool drawVelocity = true;
     bool drawNormals = true;
     bool drawCollision = true;
+    bool drawSolidMap = true;
+    bool drawWireframeCollision = true;
+    bool drawSurfaceColors = true;
+    bool drawTriangleNormals = false;
     bool paused = false;
     bool frameStepRequested = false;
     bool recording = true;
     int replayFrame = 0;
     std::string backendStatus;
+    std::string currentMapName = "No map";
+    std::string currentFloorSurface = "none";
 };
 
 class DebugUI {

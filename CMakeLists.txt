@@ -46,6 +46,7 @@ endif()
 add_library(sm64ps_core STATIC
     src/assets/RomExtractor.cpp
     src/assets/RuntimeAssets.cpp
+    src/assets/TestMap.cpp
     src/collision/CollisionWorld.cpp
     src/debug/Console.cpp
     src/debug/TweakVars.cpp
@@ -134,6 +135,9 @@ if(SM64PS_BUILD_APP)
         COMMAND ${CMAKE_COMMAND} -E copy_directory
             ${CMAKE_SOURCE_DIR}/configs
             $<TARGET_FILE_DIR:sm64_physics_sandbox>/configs
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${CMAKE_SOURCE_DIR}/maps
+            $<TARGET_FILE_DIR:sm64_physics_sandbox>/maps
         COMMAND ${CMAKE_COMMAND}
             -D SRC=${CMAKE_SOURCE_DIR}/third_party/libsm64/dist/sm64.dll
             -D DST=$<TARGET_FILE_DIR:sm64_physics_sandbox>/sm64.dll
@@ -168,4 +172,10 @@ if(SM64PS_BUILD_TESTS)
     )
     target_link_libraries(sm64ps_collision_tests PRIVATE sm64ps_core sm64ps_project_warnings)
     add_test(NAME collision COMMAND sm64ps_collision_tests)
+
+    add_executable(sm64ps_map_tests
+        tests/map_tests.cpp
+    )
+    target_link_libraries(sm64ps_map_tests PRIVATE sm64ps_core sm64ps_project_warnings)
+    add_test(NAME map_parsing COMMAND sm64ps_map_tests)
 endif()

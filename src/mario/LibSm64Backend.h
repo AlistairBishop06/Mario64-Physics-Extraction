@@ -22,6 +22,7 @@ public:
     void setCameraLook(glm::vec3 look);
     void tick(const MarioInput& input);
     void syncBody(MarioBody& body) const;
+    void reloadSurfaces(const collision::CollisionWorld& collisionWorld);
     bool initializeAudio();
     std::uint32_t tickAudio(std::uint32_t queuedSamples, std::uint32_t desiredSamples, std::vector<std::int16_t>& outSamples);
 

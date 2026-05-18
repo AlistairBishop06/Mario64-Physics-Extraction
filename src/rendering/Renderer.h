@@ -1,6 +1,7 @@
 #pragma once
 
 #include "assets/RuntimeAssets.h"
+#include "assets/TestMap.h"
 #include "collision/CollisionWorld.h"
 #include "mario/MarioState.h"
 #include "rendering/DebugRenderer.h"
@@ -8,6 +9,13 @@
 #include <SDL.h>
 
 namespace sm64ps::rendering {
+
+struct MapRenderOptions {
+    bool solid = true;
+    bool wireframe = true;
+    bool surfaceColors = true;
+    bool triangleNormals = false;
+};
 
 class Renderer {
 public:
@@ -17,6 +25,7 @@ public:
     void updateLakituCamera(const mario::MarioBody& body, float orbitInput, float zoomInput);
     glm::vec3 cameraLookDirection() const;
     void beginFrame(int width, int height);
+    void drawMap(const assets::TestMap& map, const MapRenderOptions& options);
     void drawCollision(const collision::CollisionWorld& collisionWorld);
     void drawMario(const mario::MarioBody& body, const assets::Mesh* mesh = nullptr);
     void drawDebugLines(const DebugRenderer& debugRenderer);

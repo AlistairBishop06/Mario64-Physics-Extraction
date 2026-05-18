@@ -77,6 +77,15 @@ std::filesystem::path findExtractedDirectory()
     return findFirstExisting(candidates).value_or("extracted");
 }
 
+std::filesystem::path findDefaultMapPath()
+{
+    std::vector<std::filesystem::path> candidates;
+    for (const auto& root : searchRoots()) {
+        candidates.push_back(root / "maps" / "movement_lab.json");
+    }
+    return findFirstExisting(candidates).value_or("maps/movement_lab.json");
+}
+
 std::filesystem::path findLibSm64Dll()
 {
     std::vector<std::filesystem::path> candidates;
@@ -157,6 +166,7 @@ bool SandboxApp::initialize()
     }
     tweaks_.applyTo(world_.marioController().tuning());
     runtimeAssets_.loadFromDirectory(findExtractedDirectory());
+    loadDefaultMap();
     const auto libSm64Path = findLibSm64Dll();
     const auto libSm64Rom = findRomPath();
     if (libSm64_.initialize(libSm64Path, libSm64Rom, world_.collisionWorld())) {
@@ -166,6 +176,7 @@ bool SandboxApp::initialize()
         util::logWarn(libSm64_.status());
     }
     debugState_.backendStatus = libSm64_.status();
+    refreshMapDebugState();
     registerConsoleCommands();
     return true;
 }
@@ -201,6 +212,7 @@ int SandboxApp::run()
             });
             debugState_.frameStepRequested = false;
         }
+        refreshMapDebugState();
         audioAccumulator_ += elapsed;
         while (audioAccumulator_ >= 1.0 / 30.0) {
             pumpAudio();
@@ -219,9 +231,12 @@ int SandboxApp::run()
         int height = 0;
         SDL_GetWindowSize(window_, &width, &height);
         renderer_.beginFrame(width, height);
-        if (debugState_.drawCollision) {
-            renderer_.drawCollision(world_.collisionWorld());
-        }
+        rendering::MapRenderOptions mapOptions;
+        mapOptions.solid = debugState_.drawSolidMap;
+        mapOptions.wireframe = debugState_.drawWireframeCollision;
+        mapOptions.surfaceColors = debugState_.drawSurfaceColors;
+        mapOptions.triangleNormals = debugState_.drawTriangleNormals;
+        renderer_.drawMap(currentMap_, mapOptions);
         const assets::Mesh* marioMesh = libSm64_.active()
             ? &libSm64_.mesh()
             : (runtimeAssets_.hasMarioMesh() ? &runtimeAssets_.marioMesh() : nullptr);
@@ -284,6 +299,7 @@ void SandboxApp::registerConsoleCommands()
 {
     debugUi_.console().registerCommand("reset", "reset simulation and replay", [this](const std::vector<std::string>&) {
         world_.reset();
+        applyActiveMap();
         replay_.clear();
         return debug::ConsoleResult { true, "simulation reset" };
     });
@@ -321,6 +337,30 @@ void SandboxApp::registerConsoleCommands()
     });
     debugUi_.console().registerCommand("backend", "show active Mario backend", [this](const std::vector<std::string>&) {
         return debug::ConsoleResult { true, libSm64_.status() };
+    });
+    debugUi_.console().registerCommand("load_map", "load a JSON map: load_map <path>", [this](const std::vector<std::string>& args) {
+        if (args.size() < 2) {
+            return debug::ConsoleResult { false, "usage: load_map <path>" };
+        }
+        std::string path = args[1];
+        for (std::size_t i = 2; i < args.size(); ++i) {
+            path += " " + args[i];
+        }
+        const bool ok = loadMap(path);
+        return debug::ConsoleResult { ok, ok ? "loaded map: " + currentMap_.name() : "failed to load map: " + path };
+    });
+    debugUi_.console().registerCommand("reload_map", "reload the active map file", [this](const std::vector<std::string>&) {
+        if (currentMapPath_.empty()) {
+            loadDefaultMap();
+            return debug::ConsoleResult { true, "reloaded built-in movement lab" };
+        }
+        const bool ok = loadMap(currentMapPath_);
+        return debug::ConsoleResult { ok, ok ? "reloaded map: " + currentMap_.name() : "failed to reload map" };
+    });
+    debugUi_.console().registerCommand("map_info", "show active map information", [this](const std::vector<std::string>&) {
+        return debug::ConsoleResult { true,
+            currentMap_.name() + " | meshes=" + std::to_string(currentMap_.meshes().size())
+                + " triangles=" + std::to_string(currentMap_.triangleCount()) };
     });
 }
 
@@ -392,6 +432,54 @@ void SandboxApp::shutdownAudio()
         SDL_ClearQueuedAudio(audioDevice_);
         SDL_CloseAudioDevice(audioDevice_);
         audioDevice_ = 0;
+    }
+}
+
+bool SandboxApp::loadMap(const std::filesystem::path& path)
+{
+    std::string error;
+    auto map = assets::TestMap::loadJson(path, error);
+    if (!map) {
+        util::logWarn("Map load failed: ", error);
+        return false;
+    }
+
+    currentMap_ = std::move(*map);
+    currentMapPath_ = path;
+    applyActiveMap();
+    refreshMapDebugState();
+    util::logInfo("Loaded map ", currentMap_.name(), " (", currentMap_.triangleCount(), " triangles)");
+    return true;
+}
+
+void SandboxApp::loadDefaultMap()
+{
+    const auto mapPath = findDefaultMapPath();
+    if (!loadMap(mapPath)) {
+        currentMap_ = assets::TestMap::builtInMovementLab();
+        currentMapPath_.clear();
+        applyActiveMap();
+        refreshMapDebugState();
+        util::logWarn("Using built-in movement lab map");
+    }
+}
+
+void SandboxApp::applyActiveMap()
+{
+    currentMap_.applyTo(world_.collisionWorld());
+    if (libSm64_.active()) {
+        libSm64_.reloadSurfaces(world_.collisionWorld());
+    }
+}
+
+void SandboxApp::refreshMapDebugState()
+{
+    debugState_.currentMapName = currentMap_.name();
+    debugState_.currentFloorSurface = "none";
+
+    const auto floor = world_.collisionWorld().findFloor(world_.marioBody().position, 50.0f);
+    if (floor && floor->surface) {
+        debugState_.currentFloorSurface = assets::surfaceTypeToString(floor->surface->type);
     }
 }
 

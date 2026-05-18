@@ -1,6 +1,7 @@
 #pragma once
 
 #include "assets/RuntimeAssets.h"
+#include "assets/TestMap.h"
 #include "debug/DebugUI.h"
 #include "debug/TweakVars.h"
 #include "mario/LibSm64Backend.h"
@@ -9,6 +10,8 @@
 #include "rendering/DebugRenderer.h"
 #include "rendering/Renderer.h"
 #include "replay/Replay.h"
+
+#include <filesystem>
 
 #include <SDL.h>
 
@@ -27,6 +30,10 @@ private:
     bool initializeAudio();
     void pumpAudio();
     void shutdownAudio();
+    bool loadMap(const std::filesystem::path& path);
+    void loadDefaultMap();
+    void applyActiveMap();
+    void refreshMapDebugState();
 
     SDL_Window* window_ = nullptr;
     SDL_AudioDeviceID audioDevice_ = 0;
@@ -40,6 +47,8 @@ private:
     replay::ReplayTrack replay_;
     replay::ReplayTrack ghost_;
     assets::RuntimeAssets runtimeAssets_;
+    assets::TestMap currentMap_;
+    std::filesystem::path currentMapPath_;
     mario::LibSm64Backend libSm64_;
     float cameraOrbitInput_ = 0.0f;
     float cameraZoomInput_ = 0.0f;

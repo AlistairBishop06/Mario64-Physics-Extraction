@@ -201,6 +201,14 @@ void LibSm64Backend::setCameraLook(glm::vec3 look)
     }
 }
 
+void LibSm64Backend::reloadSurfaces(const collision::CollisionWorld& collisionWorld)
+{
+    if (!active_ || !api_ || !api_->staticSurfacesLoad) {
+        return;
+    }
+    loadSurfaces(collisionWorld);
+}
+
 void LibSm64Backend::tick(const MarioInput& input)
 {
     if (!active_ || !api_) {

@@ -15,6 +15,28 @@ void vec3Text(const char* label, const glm::vec3& value)
     ImGui::Text("%s: %.3f, %.3f, %.3f", label, value.x, value.y, value.z);
 }
 
+void surfaceLegend()
+{
+    const surfaces::SurfaceType surfaces[] = {
+        surfaces::SurfaceType::Default,
+        surfaces::SurfaceType::Slippery,
+        surfaces::SurfaceType::VerySlippery,
+        surfaces::SurfaceType::NotSlippery,
+        surfaces::SurfaceType::WallKickable,
+        surfaces::SurfaceType::LedgeGrab,
+        surfaces::SurfaceType::Lava,
+        surfaces::SurfaceType::Quicksand,
+    };
+
+    for (const auto surface : surfaces) {
+        const glm::vec3 color = assets::defaultSurfaceColor(surface);
+        ImGui::ColorButton(assets::surfaceTypeToString(surface).c_str(), ImVec4(color.x, color.y, color.z, 1.0f),
+            ImGuiColorEditFlags_NoTooltip, ImVec2(14.0f, 14.0f));
+        ImGui::SameLine();
+        ImGui::Text("%s", assets::surfaceTypeToString(surface).c_str());
+    }
+}
+
 } // namespace
 
 DebugUI::DebugUI()
@@ -35,6 +57,7 @@ void DebugUI::draw(physics::PhysicsWorld& world, TweakVars& tweaks, replay::Repl
 
     ImGui::Begin("SM64 Physics Sandbox");
     ImGui::Text("Frame: %llu", static_cast<unsigned long long>(world.frame()));
+    ImGui::Text("Map: %s", state.currentMapName.c_str());
     if (!state.backendStatus.empty()) {
         ImGui::TextWrapped("Backend: %s", state.backendStatus.c_str());
     }
@@ -43,6 +66,7 @@ void DebugUI::draw(physics::PhysicsWorld& world, TweakVars& tweaks, replay::Repl
     vec3Text("Velocity", body.velocity);
     ImGui::Text("Face yaw: 0x%04x", body.faceYaw);
     ImGui::Text("Floor angle: %.2f deg", mario::floorSlopeDegrees(body.floorNormal));
+    ImGui::Text("Floor surface: %s", state.currentFloorSurface.c_str());
 
     ImGui::Separator();
     ImGui::Checkbox("Pause", &state.paused);
@@ -55,7 +79,14 @@ void DebugUI::draw(physics::PhysicsWorld& world, TweakVars& tweaks, replay::Repl
     ImGui::Separator();
     ImGui::Checkbox("Velocity vector", &state.drawVelocity);
     ImGui::Checkbox("Collision normals", &state.drawNormals);
-    ImGui::Checkbox("Collision mesh", &state.drawCollision);
+    ImGui::Checkbox("Solid map", &state.drawSolidMap);
+    ImGui::Checkbox("Wireframe collision", &state.drawWireframeCollision);
+    ImGui::Checkbox("Surface colors", &state.drawSurfaceColors);
+    ImGui::Checkbox("Triangle normals", &state.drawTriangleNormals);
+
+    if (ImGui::CollapsingHeader("Surface Legend")) {
+        surfaceLegend();
+    }
 
     if (ghost.empty()) {
         ImGui::Text("Ghost: none loaded");

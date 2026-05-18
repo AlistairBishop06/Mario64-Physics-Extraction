@@ -1,0 +1,13 @@
+C:/Users/Alistair/Documents/VSCode/mario64/build-core/CMakeFiles/sm64ps_core.dir
+C:/Users/Alistair/Documents/VSCode/mario64/build-core/CMakeFiles/sm64ps_asset_extractor.dir
+C:/Users/Alistair/Documents/VSCode/mario64/build-core/CMakeFiles/sm64ps_movement_math_tests.dir
+C:/Users/Alistair/Documents/VSCode/mario64/build-core/CMakeFiles/sm64ps_replay_tests.dir
+C:/Users/Alistair/Documents/VSCode/mario64/build-core/CMakeFiles/RUN_TESTS.dir
+C:/Users/Alistair/Documents/VSCode/mario64/build-core/CMakeFiles/ALL_BUILD.dir
+C:/Users/Alistair/Documents/VSCode/mario64/build-core/CMakeFiles/ZERO_CHECK.dir
+C:/Users/Alistair/Documents/VSCode/mario64/build-core/_deps/glm-build/CMakeFiles/RUN_TESTS.dir
+C:/Users/Alistair/Documents/VSCode/mario64/build-core/_deps/glm-build/CMakeFiles/ALL_BUILD.dir
+C:/Users/Alistair/Documents/VSCode/mario64/build-core/_deps/glm-build/glm/CMakeFiles/glm.dir
+C:/Users/Alistair/Documents/VSCode/mario64/build-core/_deps/glm-build/glm/CMakeFiles/RUN_TESTS.dir
+C:/Users/Alistair/Documents/VSCode/mario64/build-core/_deps/nlohmann_json-build/CMakeFiles/RUN_TESTS.dir
+C:/Users/Alistair/Documents/VSCode/mario64/build-core/_deps/nlohmann_json-build/CMakeFiles/ALL_BUILD.dir

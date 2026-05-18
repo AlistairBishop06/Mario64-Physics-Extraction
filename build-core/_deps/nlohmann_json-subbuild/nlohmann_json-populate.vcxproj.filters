@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\Alistair\Documents\VSCode\mario64\build-core\_deps\nlohmann_json-subbuild\CMakeFiles\efc9a50ac696e534e4a664cddd9b86f0\nlohmann_json-populate-mkdir.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\Alistair\Documents\VSCode\mario64\build-core\_deps\nlohmann_json-subbuild\CMakeFiles\efc9a50ac696e534e4a664cddd9b86f0\nlohmann_json-populate-download.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\Alistair\Documents\VSCode\mario64\build-core\_deps\nlohmann_json-subbuild\CMakeFiles\efc9a50ac696e534e4a664cddd9b86f0\nlohmann_json-populate-update.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\Alistair\Documents\VSCode\mario64\build-core\_deps\nlohmann_json-subbuild\CMakeFiles\efc9a50ac696e534e4a664cddd9b86f0\nlohmann_json-populate-patch.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\Alistair\Documents\VSCode\mario64\build-core\_deps\nlohmann_json-subbuild\CMakeFiles\efc9a50ac696e534e4a664cddd9b86f0\nlohmann_json-populate-configure.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\Alistair\Documents\VSCode\mario64\build-core\_deps\nlohmann_json-subbuild\CMakeFiles\efc9a50ac696e534e4a664cddd9b86f0\nlohmann_json-populate-build.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\Alistair\Documents\VSCode\mario64\build-core\_deps\nlohmann_json-subbuild\CMakeFiles\efc9a50ac696e534e4a664cddd9b86f0\nlohmann_json-populate-install.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\Alistair\Documents\VSCode\mario64\build-core\_deps\nlohmann_json-subbuild\CMakeFiles\efc9a50ac696e534e4a664cddd9b86f0\nlohmann_json-populate-test.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\Alistair\Documents\VSCode\mario64\build-core\_deps\nlohmann_json-subbuild\CMakeFiles\c5c927bd92b6eedbd7c1d74c3961654b\nlohmann_json-populate-complete.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\Alistair\Documents\VSCode\mario64\build-core\_deps\nlohmann_json-subbuild\CMakeFiles\56cece00ed590e56958ad04c4ab2eb92\nlohmann_json-populate.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\Alistair\Documents\VSCode\mario64\build-core\_deps\nlohmann_json-subbuild\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\Alistair\Documents\VSCode\mario64\build-core\_deps\nlohmann_json-subbuild\CMakeFiles\nlohmann_json-populate" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{5CCD057B-77C4-3A90-9167-C67ACB9E9841}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

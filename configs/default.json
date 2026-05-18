@@ -1,0 +1,24 @@
+{
+  "physics": {
+    "fixed_dt": 0.03333333333333333,
+    "max_frame_steps": 5
+  },
+  "movement": {
+    "walk_speed": 12.0,
+    "run_speed": 32.0,
+    "ground_accel": 2.4,
+    "ground_decel": 1.8,
+    "air_accel": 1.1,
+    "jump_velocity": 42.0,
+    "gravity": -4.0,
+    "terminal_velocity": -75.0,
+    "long_jump_forward_speed": 48.0,
+    "dive_forward_speed": 52.0
+  },
+  "debug": {
+    "draw_velocity": true,
+    "draw_normals": true,
+    "draw_collision": true
+  }
+}
+

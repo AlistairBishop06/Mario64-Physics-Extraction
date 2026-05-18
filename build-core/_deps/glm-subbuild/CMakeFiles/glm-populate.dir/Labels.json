@@ -1,0 +1,46 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "C:/Users/Alistair/Documents/VSCode/mario64/build-core/_deps/glm-subbuild/CMakeFiles/glm-populate"
+		},
+		{
+			"file" : "C:/Users/Alistair/Documents/VSCode/mario64/build-core/_deps/glm-subbuild/CMakeFiles/c3841a8f5d67883a0ad01c389e706d4d/glm-populate.rule"
+		},
+		{
+			"file" : "C:/Users/Alistair/Documents/VSCode/mario64/build-core/_deps/glm-subbuild/CMakeFiles/dfe3601cfa6acdb38dc20016f4f13288/glm-populate-complete.rule"
+		},
+		{
+			"file" : "C:/Users/Alistair/Documents/VSCode/mario64/build-core/_deps/glm-subbuild/CMakeFiles/5beff58fda30de48b3b1f453dd0688a8/glm-populate-build.rule"
+		},
+		{
+			"file" : "C:/Users/Alistair/Documents/VSCode/mario64/build-core/_deps/glm-subbuild/CMakeFiles/5beff58fda30de48b3b1f453dd0688a8/glm-populate-configure.rule"
+		},
+		{
+			"file" : "C:/Users/Alistair/Documents/VSCode/mario64/build-core/_deps/glm-subbuild/CMakeFiles/5beff58fda30de48b3b1f453dd0688a8/glm-populate-download.rule"
+		},
+		{
+			"file" : "C:/Users/Alistair/Documents/VSCode/mario64/build-core/_deps/glm-subbuild/CMakeFiles/5beff58fda30de48b3b1f453dd0688a8/glm-populate-install.rule"
+		},
+		{
+			"file" : "C:/Users/Alistair/Documents/VSCode/mario64/build-core/_deps/glm-subbuild/CMakeFiles/5beff58fda30de48b3b1f453dd0688a8/glm-populate-mkdir.rule"
+		},
+		{
+			"file" : "C:/Users/Alistair/Documents/VSCode/mario64/build-core/_deps/glm-subbuild/CMakeFiles/5beff58fda30de48b3b1f453dd0688a8/glm-populate-patch.rule"
+		},
+		{
+			"file" : "C:/Users/Alistair/Documents/VSCode/mario64/build-core/_deps/glm-subbuild/CMakeFiles/5beff58fda30de48b3b1f453dd0688a8/glm-populate-test.rule"
+		},
+		{
+			"file" : "C:/Users/Alistair/Documents/VSCode/mario64/build-core/_deps/glm-subbuild/CMakeFiles/5beff58fda30de48b3b1f453dd0688a8/glm-populate-update.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"glm-populate"
+		],
+		"name" : "glm-populate"
+	}
+}

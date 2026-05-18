@@ -1,0 +1,46 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "C:/Users/Alistair/Documents/VSCode/mario64/build-core/_deps/nlohmann_json-subbuild/CMakeFiles/nlohmann_json-populate"
+		},
+		{
+			"file" : "C:/Users/Alistair/Documents/VSCode/mario64/build-core/_deps/nlohmann_json-subbuild/CMakeFiles/56cece00ed590e56958ad04c4ab2eb92/nlohmann_json-populate.rule"
+		},
+		{
+			"file" : "C:/Users/Alistair/Documents/VSCode/mario64/build-core/_deps/nlohmann_json-subbuild/CMakeFiles/c5c927bd92b6eedbd7c1d74c3961654b/nlohmann_json-populate-complete.rule"
+		},
+		{
+			"file" : "C:/Users/Alistair/Documents/VSCode/mario64/build-core/_deps/nlohmann_json-subbuild/CMakeFiles/efc9a50ac696e534e4a664cddd9b86f0/nlohmann_json-populate-build.rule"
+		},
+		{
+			"file" : "C:/Users/Alistair/Documents/VSCode/mario64/build-core/_deps/nlohmann_json-subbuild/CMakeFiles/efc9a50ac696e534e4a664cddd9b86f0/nlohmann_json-populate-configure.rule"
+		},
+		{
+			"file" : "C:/Users/Alistair/Documents/VSCode/mario64/build-core/_deps/nlohmann_json-subbuild/CMakeFiles/efc9a50ac696e534e4a664cddd9b86f0/nlohmann_json-populate-download.rule"
+		},
+		{
+			"file" : "C:/Users/Alistair/Documents/VSCode/mario64/build-core/_deps/nlohmann_json-subbuild/CMakeFiles/efc9a50ac696e534e4a664cddd9b86f0/nlohmann_json-populate-install.rule"
+		},
+		{
+			"file" : "C:/Users/Alistair/Documents/VSCode/mario64/build-core/_deps/nlohmann_json-subbuild/CMakeFiles/efc9a50ac696e534e4a664cddd9b86f0/nlohmann_json-populate-mkdir.rule"
+		},
+		{
+			"file" : "C:/Users/Alistair/Documents/VSCode/mario64/build-core/_deps/nlohmann_json-subbuild/CMakeFiles/efc9a50ac696e534e4a664cddd9b86f0/nlohmann_json-populate-patch.rule"
+		},
+		{
+			"file" : "C:/Users/Alistair/Documents/VSCode/mario64/build-core/_deps/nlohmann_json-subbuild/CMakeFiles/efc9a50ac696e534e4a664cddd9b86f0/nlohmann_json-populate-test.rule"
+		},
+		{
+			"file" : "C:/Users/Alistair/Documents/VSCode/mario64/build-core/_deps/nlohmann_json-subbuild/CMakeFiles/efc9a50ac696e534e4a664cddd9b86f0/nlohmann_json-populate-update.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"nlohmann_json-populate"
+		],
+		"name" : "nlohmann_json-populate"
+	}
+}

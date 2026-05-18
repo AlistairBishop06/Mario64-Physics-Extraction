@@ -1,0 +1,38 @@
+# CMake generated Testfile for 
+# Source directory: C:/Users/Alistair/Documents/VSCode/mario64
+# Build directory: C:/Users/Alistair/Documents/VSCode/mario64/build-core
+# 
+# This file includes the relevant testing commands required for 
+# testing this directory and lists subdirectories to be tested as well.
+if(CTEST_CONFIGURATION_TYPE MATCHES "^([Dd][Ee][Bb][Uu][Gg])$")
+  add_test([=[movement_math]=] "C:/Users/Alistair/Documents/VSCode/mario64/build-core/Debug/sm64ps_movement_math_tests.exe")
+  set_tests_properties([=[movement_math]=] PROPERTIES  _BACKTRACE_TRIPLES "C:/Users/Alistair/Documents/VSCode/mario64/CMakeLists.txt;144;add_test;C:/Users/Alistair/Documents/VSCode/mario64/CMakeLists.txt;0;")
+elseif(CTEST_CONFIGURATION_TYPE MATCHES "^([Rr][Ee][Ll][Ee][Aa][Ss][Ee])$")
+  add_test([=[movement_math]=] "C:/Users/Alistair/Documents/VSCode/mario64/build-core/Release/sm64ps_movement_math_tests.exe")
+  set_tests_properties([=[movement_math]=] PROPERTIES  _BACKTRACE_TRIPLES "C:/Users/Alistair/Documents/VSCode/mario64/CMakeLists.txt;144;add_test;C:/Users/Alistair/Documents/VSCode/mario64/CMakeLists.txt;0;")
+elseif(CTEST_CONFIGURATION_TYPE MATCHES "^([Mm][Ii][Nn][Ss][Ii][Zz][Ee][Rr][Ee][Ll])$")
+  add_test([=[movement_math]=] "C:/Users/Alistair/Documents/VSCode/mario64/build-core/MinSizeRel/sm64ps_movement_math_tests.exe")
+  set_tests_properties([=[movement_math]=] PROPERTIES  _BACKTRACE_TRIPLES "C:/Users/Alistair/Documents/VSCode/mario64/CMakeLists.txt;144;add_test;C:/Users/Alistair/Documents/VSCode/mario64/CMakeLists.txt;0;")
+elseif(CTEST_CONFIGURATION_TYPE MATCHES "^([Rr][Ee][Ll][Ww][Ii][Tt][Hh][Dd][Ee][Bb][Ii][Nn][Ff][Oo])$")
+  add_test([=[movement_math]=] "C:/Users/Alistair/Documents/VSCode/mario64/build-core/RelWithDebInfo/sm64ps_movement_math_tests.exe")
+  set_tests_properties([=[movement_math]=] PROPERTIES  _BACKTRACE_TRIPLES "C:/Users/Alistair/Documents/VSCode/mario64/CMakeLists.txt;144;add_test;C:/Users/Alistair/Documents/VSCode/mario64/CMakeLists.txt;0;")
+else()
+  add_test([=[movement_math]=] NOT_AVAILABLE)
+endif()
+if(CTEST_CONFIGURATION_TYPE MATCHES "^([Dd][Ee][Bb][Uu][Gg])$")
+  add_test([=[replay_serialization]=] "C:/Users/Alistair/Documents/VSCode/mario64/build-core/Debug/sm64ps_replay_tests.exe")
+  set_tests_properties([=[replay_serialization]=] PROPERTIES  _BACKTRACE_TRIPLES "C:/Users/Alistair/Documents/VSCode/mario64/CMakeLists.txt;150;add_test;C:/Users/Alistair/Documents/VSCode/mario64/CMakeLists.txt;0;")
+elseif(CTEST_CONFIGURATION_TYPE MATCHES "^([Rr][Ee][Ll][Ee][Aa][Ss][Ee])$")
+  add_test([=[replay_serialization]=] "C:/Users/Alistair/Documents/VSCode/mario64/build-core/Release/sm64ps_replay_tests.exe")
+  set_tests_properties([=[replay_serialization]=] PROPERTIES  _BACKTRACE_TRIPLES "C:/Users/Alistair/Documents/VSCode/mario64/CMakeLists.txt;150;add_test;C:/Users/Alistair/Documents/VSCode/mario64/CMakeLists.txt;0;")
+elseif(CTEST_CONFIGURATION_TYPE MATCHES "^([Mm][Ii][Nn][Ss][Ii][Zz][Ee][Rr][Ee][Ll])$")
+  add_test([=[replay_serialization]=] "C:/Users/Alistair/Documents/VSCode/mario64/build-core/MinSizeRel/sm64ps_replay_tests.exe")
+  set_tests_properties([=[replay_serialization]=] PROPERTIES  _BACKTRACE_TRIPLES "C:/Users/Alistair/Documents/VSCode/mario64/CMakeLists.txt;150;add_test;C:/Users/Alistair/Documents/VSCode/mario64/CMakeLists.txt;0;")
+elseif(CTEST_CONFIGURATION_TYPE MATCHES "^([Rr][Ee][Ll][Ww][Ii][Tt][Hh][Dd][Ee][Bb][Ii][Nn][Ff][Oo])$")
+  add_test([=[replay_serialization]=] "C:/Users/Alistair/Documents/VSCode/mario64/build-core/RelWithDebInfo/sm64ps_replay_tests.exe")
+  set_tests_properties([=[replay_serialization]=] PROPERTIES  _BACKTRACE_TRIPLES "C:/Users/Alistair/Documents/VSCode/mario64/CMakeLists.txt;150;add_test;C:/Users/Alistair/Documents/VSCode/mario64/CMakeLists.txt;0;")
+else()
+  add_test([=[replay_serialization]=] NOT_AVAILABLE)
+endif()
+subdirs("_deps/glm-build")
+subdirs("_deps/nlohmann_json-build")

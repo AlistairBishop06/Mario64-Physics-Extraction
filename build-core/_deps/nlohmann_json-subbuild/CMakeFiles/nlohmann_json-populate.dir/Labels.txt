@@ -1,0 +1,14 @@
+# Target labels
+ nlohmann_json-populate
+# Source files and their labels
+C:/Users/Alistair/Documents/VSCode/mario64/build-core/_deps/nlohmann_json-subbuild/CMakeFiles/nlohmann_json-populate
+C:/Users/Alistair/Documents/VSCode/mario64/build-core/_deps/nlohmann_json-subbuild/CMakeFiles/56cece00ed590e56958ad04c4ab2eb92/nlohmann_json-populate.rule
+C:/Users/Alistair/Documents/VSCode/mario64/build-core/_deps/nlohmann_json-subbuild/CMakeFiles/c5c927bd92b6eedbd7c1d74c3961654b/nlohmann_json-populate-complete.rule
+C:/Users/Alistair/Documents/VSCode/mario64/build-core/_deps/nlohmann_json-subbuild/CMakeFiles/efc9a50ac696e534e4a664cddd9b86f0/nlohmann_json-populate-build.rule
+C:/Users/Alistair/Documents/VSCode/mario64/build-core/_deps/nlohmann_json-subbuild/CMakeFiles/efc9a50ac696e534e4a664cddd9b86f0/nlohmann_json-populate-configure.rule
+C:/Users/Alistair/Documents/VSCode/mario64/build-core/_deps/nlohmann_json-subbuild/CMakeFiles/efc9a50ac696e534e4a664cddd9b86f0/nlohmann_json-populate-download.rule
+C:/Users/Alistair/Documents/VSCode/mario64/build-core/_deps/nlohmann_json-subbuild/CMakeFiles/efc9a50ac696e534e4a664cddd9b86f0/nlohmann_json-populate-install.rule
+C:/Users/Alistair/Documents/VSCode/mario64/build-core/_deps/nlohmann_json-subbuild/CMakeFiles/efc9a50ac696e534e4a664cddd9b86f0/nlohmann_json-populate-mkdir.rule
+C:/Users/Alistair/Documents/VSCode/mario64/build-core/_deps/nlohmann_json-subbuild/CMakeFiles/efc9a50ac696e534e4a664cddd9b86f0/nlohmann_json-populate-patch.rule
+C:/Users/Alistair/Documents/VSCode/mario64/build-core/_deps/nlohmann_json-subbuild/CMakeFiles/efc9a50ac696e534e4a664cddd9b86f0/nlohmann_json-populate-test.rule
+C:/Users/Alistair/Documents/VSCode/mario64/build-core/_deps/nlohmann_json-subbuild/CMakeFiles/efc9a50ac696e534e4a664cddd9b86f0/nlohmann_json-populate-update.rule

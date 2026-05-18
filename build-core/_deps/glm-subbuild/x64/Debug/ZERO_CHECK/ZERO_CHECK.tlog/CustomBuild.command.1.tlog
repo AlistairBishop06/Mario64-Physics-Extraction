@@ -1,0 +1,10 @@
+^C:\USERS\ALISTAIR\DOCUMENTS\VSCODE\MARIO64\BUILD-CORE\_DEPS\GLM-SUBBUILD\CMAKEFILES\C3841A8F5D67883A0AD01C389E706D4D\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/Alistair/Documents/VSCode/mario64/build-core/_deps/glm-subbuild -BC:/Users/Alistair/Documents/VSCode/mario64/build-core/_deps/glm-subbuild --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file C:/Users/Alistair/Documents/VSCode/mario64/build-core/_deps/glm-subbuild/glm-populate.sln
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

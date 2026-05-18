@@ -182,7 +182,8 @@ void LibSm64Backend::tick(const MarioInput& input)
     sm64Input.camLookX = cameraLook_.x;
     sm64Input.camLookZ = cameraLook_.z;
     sm64Input.stickX = std::clamp(input.stick.x, -1.0f, 1.0f);
-    sm64Input.stickY = std::clamp(input.stick.y, -1.0f, 1.0f);
+    // libsm64 follows the original controller convention: forward is negative Y.
+    sm64Input.stickY = std::clamp(-input.stick.y, -1.0f, 1.0f);
     sm64Input.buttonA = input.jumpPressed ? 1 : 0;
     sm64Input.buttonB = input.attackPressed ? 1 : 0;
     sm64Input.buttonZ = input.crouchHeld ? 1 : 0;

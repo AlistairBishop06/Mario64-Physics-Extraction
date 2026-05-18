@@ -101,6 +101,14 @@ void Renderer::setMarioTexture(const std::vector<std::uint8_t>& rgba, int width,
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
+void Renderer::clearMarioTexture()
+{
+    if (marioTexture_ != 0) {
+        glDeleteTextures(1, &marioTexture_);
+        marioTexture_ = 0;
+    }
+}
+
 void Renderer::updateLakituCamera(const mario::MarioBody& body, float orbitInput, float zoomInput)
 {
     constexpr float kPi = 3.14159265f;

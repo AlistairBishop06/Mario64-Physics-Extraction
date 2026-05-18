@@ -45,6 +45,8 @@ endif()
 
 add_library(sm64ps_core STATIC
     src/assets/RomExtractor.cpp
+    src/assets/RomImage.cpp
+    src/assets/RomManager.cpp
     src/assets/RuntimeAssets.cpp
     src/assets/TestMap.cpp
     src/collision/CollisionWorld.cpp
@@ -54,6 +56,7 @@ add_library(sm64ps_core STATIC
     src/mario/MarioController.cpp
     src/mario/LibSm64Backend.cpp
     src/mario/MarioMath.cpp
+    src/mario/MarioKartBackend.cpp
     src/physics/FixedTimestep.cpp
     src/physics/PhysicsWorld.cpp
     src/replay/Replay.cpp

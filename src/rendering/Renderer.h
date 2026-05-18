@@ -22,6 +22,7 @@ public:
     bool initialize(SDL_Window* window);
     void shutdown();
     void setMarioTexture(const std::vector<std::uint8_t>& rgba, int width, int height);
+    void clearMarioTexture();
     void updateLakituCamera(const mario::MarioBody& body, float orbitInput, float zoomInput);
     glm::vec3 cameraLookDirection() const;
     void beginFrame(int width, int height);

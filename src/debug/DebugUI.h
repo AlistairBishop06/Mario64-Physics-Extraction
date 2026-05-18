@@ -24,6 +24,12 @@ struct DebugUiState {
     bool recording = true;
     int replayFrame = 0;
     std::string backendStatus;
+    std::string romWatcherStatus = "empty";
+    std::string romStatus = "Insert a ROM";
+    std::string currentRomFilename = "none";
+    std::string currentRomHash = "none";
+    std::string currentRomGame = "none";
+    std::string romWarning;
     std::string currentMapName = "No map";
     std::string currentFloorSurface = "none";
 };

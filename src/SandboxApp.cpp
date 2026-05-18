@@ -1,5 +1,6 @@
 #include "SandboxApp.h"
 
+#include "mario/MarioKartBackend.h"
 #include "mario/MarioMath.h"
 #include "util/Config.h"
 #include "util/Log.h"
@@ -15,6 +16,7 @@
 #include <cstdlib>
 #include <exception>
 #include <filesystem>
+#include <memory>
 #include <optional>
 #include <string>
 #include <vector>
@@ -77,6 +79,15 @@ std::filesystem::path findExtractedDirectory()
     return findFirstExisting(candidates).value_or("extracted");
 }
 
+std::filesystem::path findRomDirectory()
+{
+    std::vector<std::filesystem::path> candidates;
+    for (const auto& root : searchRoots()) {
+        candidates.push_back(root / "roms");
+    }
+    return findFirstExisting(candidates).value_or("roms");
+}
+
 std::filesystem::path findDefaultMapPath()
 {
     std::vector<std::filesystem::path> candidates;
@@ -94,28 +105,6 @@ std::filesystem::path findLibSm64Dll()
         candidates.push_back(root / "third_party" / "libsm64" / "dist" / "sm64.dll");
     }
     return findFirstExisting(candidates).value_or(mario::LibSm64Backend::findDefaultLibrary());
-}
-
-std::filesystem::path findRomPath()
-{
-    for (const auto& root : searchRoots()) {
-        const auto romDirectory = std::filesystem::weakly_canonical(root / "roms");
-        if (!std::filesystem::exists(romDirectory)) {
-            continue;
-        }
-
-        for (const auto& entry : std::filesystem::directory_iterator(romDirectory)) {
-            if (!entry.is_regular_file()) {
-                continue;
-            }
-            const std::string extension = entry.path().extension().string();
-            if (extension == ".z64" || extension == ".n64" || extension == ".v64") {
-                return entry.path();
-            }
-        }
-    }
-
-    return mario::LibSm64Backend::findDefaultRom();
 }
 
 } // namespace
@@ -167,15 +156,8 @@ bool SandboxApp::initialize()
     tweaks_.applyTo(world_.marioController().tuning());
     runtimeAssets_.loadFromDirectory(findExtractedDirectory());
     loadDefaultMap();
-    const auto libSm64Path = findLibSm64Dll();
-    const auto libSm64Rom = findRomPath();
-    if (libSm64_.initialize(libSm64Path, libSm64Rom, world_.collisionWorld())) {
-        renderer_.setMarioTexture(libSm64_.textureRgba(), 64 * 11, 64);
-        initializeAudio();
-    } else {
-        util::logWarn(libSm64_.status());
-    }
-    debugState_.backendStatus = libSm64_.status();
+    romManager_ = assets::RomManager(findRomDirectory());
+    updateRomRuntime();
     refreshMapDebugState();
     registerConsoleCommands();
     return true;
@@ -192,19 +174,20 @@ int SandboxApp::run()
         previous = now;
 
         mario::MarioInput input = pollInput(quit);
+        updateRomRuntime();
         renderer_.updateLakituCamera(world_.marioBody(), cameraOrbitInput_, cameraZoomInput_);
 
         const bool shouldStep = !debugState_.paused || debugState_.frameStepRequested;
         if (shouldStep) {
             timestep_.advance(elapsed, [&](float dt) {
-                if (libSm64_.active()) {
-                    (void)dt;
-                    libSm64_.setCameraLook(renderer_.cameraLookDirection());
-                    libSm64_.tick(input);
-                    libSm64_.syncBody(world_.marioBody());
+                if (playerBackend_ && playerBackend_->active()) {
+                    playerBackend_->setCameraLook(renderer_.cameraLookDirection());
+                    playerBackend_->tick(input, dt);
+                    playerBackend_->syncBody(world_.marioBody());
                     world_.advanceFrame();
                 } else {
-                    world_.step(input, dt);
+                    (void)input;
+                    (void)dt;
                 }
                 if (debugState_.recording) {
                     replay_.record(world_.frame(), input, world_.marioBody());
@@ -212,6 +195,7 @@ int SandboxApp::run()
             });
             debugState_.frameStepRequested = false;
         }
+        updatePoof(static_cast<float>(elapsed));
         refreshMapDebugState();
         audioAccumulator_ += elapsed;
         while (audioAccumulator_ >= 1.0 / 30.0) {
@@ -225,6 +209,7 @@ int SandboxApp::run()
         ImGui_ImplSDL2_NewFrame();
         ImGui::NewFrame();
         debugUi_.draw(world_, tweaks_, replay_, ghost_, debugState_);
+        drawRomOverlay();
         ImGui::Render();
 
         int width = 0;
@@ -237,10 +222,12 @@ int SandboxApp::run()
         mapOptions.surfaceColors = debugState_.drawSurfaceColors;
         mapOptions.triangleNormals = debugState_.drawTriangleNormals;
         renderer_.drawMap(currentMap_, mapOptions);
-        const assets::Mesh* marioMesh = libSm64_.active()
-            ? &libSm64_.mesh()
+        const assets::Mesh* marioMesh = playerBackend_ && playerBackend_->active()
+            ? playerBackend_->mesh()
             : (runtimeAssets_.hasMarioMesh() ? &runtimeAssets_.marioMesh() : nullptr);
-        renderer_.drawMario(world_.marioBody(), marioMesh);
+        if (playerBackend_ && playerBackend_->active()) {
+            renderer_.drawMario(world_.marioBody(), marioMesh);
+        }
         renderer_.drawDebugLines(debugRenderer_);
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         renderer_.endFrame();
@@ -256,7 +243,9 @@ void SandboxApp::shutdown()
     ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext();
     renderer_.shutdown();
-    libSm64_.shutdown();
+    if (playerBackend_) {
+        playerBackend_->shutdown();
+    }
     if (window_) {
         SDL_DestroyWindow(window_);
         window_ = nullptr;
@@ -336,7 +325,7 @@ void SandboxApp::registerConsoleCommands()
         return debug::ConsoleResult { true, debugState_.paused ? "paused" : "running" };
     });
     debugUi_.console().registerCommand("backend", "show active Mario backend", [this](const std::vector<std::string>&) {
-        return debug::ConsoleResult { true, libSm64_.status() };
+        return debug::ConsoleResult { true, playerBackend_ ? playerBackend_->status() : "no ROM avatar backend active" };
     });
     debugUi_.console().registerCommand("load_map", "load a JSON map: load_map <path>", [this](const std::vector<std::string>& args) {
         if (args.size() < 2) {
@@ -378,12 +367,159 @@ void SandboxApp::buildDebugDraw()
             debugRenderer_.normal(body.position, body.wallNormal, { 1.0f, 0.2f, 0.8f }, 12.0f);
         }
     }
+
+    for (const SmokeParticle& smoke : smoke_) {
+        const float t = smoke.lifetime > 0.0f ? std::clamp(smoke.age / smoke.lifetime, 0.0f, 1.0f) : 1.0f;
+        const glm::vec3 color = glm::vec3(0.72f, 0.72f, 0.68f) * (1.0f - t * 0.45f);
+        const float radius = smoke.size * (1.0f + t * 2.0f);
+        debugRenderer_.line(smoke.position + glm::vec3(-radius, 0.0f, 0.0f), smoke.position + glm::vec3(radius, 0.0f, 0.0f), color);
+        debugRenderer_.line(smoke.position + glm::vec3(0.0f, -radius, 0.0f), smoke.position + glm::vec3(0.0f, radius, 0.0f), color);
+        debugRenderer_.line(smoke.position + glm::vec3(0.0f, 0.0f, -radius), smoke.position + glm::vec3(0.0f, 0.0f, radius), color);
+    }
+}
+
+void SandboxApp::updateRomRuntime()
+{
+    const auto& snapshot = romManager_.update();
+    debugState_.romWatcherStatus = assets::romManagerModeName(snapshot.mode);
+    debugState_.romStatus = snapshot.message;
+    debugState_.romWarning = snapshot.multipleRoms ? "Multiple ROM files present; using the first stable supported ROM." : "";
+
+    if (snapshot.loaded) {
+        debugState_.currentRomFilename = snapshot.loaded->filename;
+        debugState_.currentRomHash = snapshot.loaded->sha1;
+        debugState_.currentRomGame = assets::romGameName(snapshot.loaded->game);
+    } else if (snapshot.mode == assets::RomManagerMode::Unsupported) {
+        debugState_.currentRomFilename = snapshot.candidatePath.filename().string();
+        debugState_.currentRomHash = "unknown";
+        debugState_.currentRomGame = "unsupported";
+    } else {
+        debugState_.currentRomFilename = "none";
+        debugState_.currentRomHash = "none";
+        debugState_.currentRomGame = "none";
+    }
+
+    if (snapshot.activeFileMissing) {
+        despawnBackend(true);
+        return;
+    }
+
+    if (snapshot.loaded && activeRomSha1_ != snapshot.loaded->sha1) {
+        spawnBackend(*snapshot.loaded);
+    }
+
+    debugState_.backendStatus = playerBackend_ ? playerBackend_->status() : "no ROM avatar backend active";
+}
+
+void SandboxApp::spawnBackend(const assets::RomImage& rom)
+{
+    despawnBackend(false);
+
+    if (rom.game == assets::RomGame::SuperMario64) {
+        auto backend = std::make_unique<mario::LibSm64Backend>();
+        if (!backend->initialize(findLibSm64Dll(), rom, world_.collisionWorld())) {
+            util::logWarn(backend->status());
+            debugState_.backendStatus = backend->status();
+            return;
+        }
+        playerBackend_ = std::move(backend);
+    } else if (rom.game == assets::RomGame::MarioKart64) {
+        auto backend = std::make_unique<mario::MarioKartBackend>();
+        if (!backend->initialize(rom, world_.collisionWorld())) {
+            util::logWarn(backend->status());
+            debugState_.backendStatus = backend->status();
+            return;
+        }
+        playerBackend_ = std::move(backend);
+    }
+
+    if (!playerBackend_) {
+        debugState_.backendStatus = "unsupported ROM backend";
+        return;
+    }
+
+    activeRomSha1_ = rom.sha1;
+    world_.reset();
+    applyActiveMap();
+    playerBackend_->syncBody(world_.marioBody());
+
+    if (const auto* texture = playerBackend_->textureRgba(); texture && !texture->empty()) {
+        renderer_.setMarioTexture(*texture, playerBackend_->textureWidth(), playerBackend_->textureHeight());
+    } else {
+        renderer_.clearMarioTexture();
+    }
+    initializeAudio();
+    util::logInfo("Spawned ROM avatar backend: ", playerBackend_->status());
+}
+
+void SandboxApp::despawnBackend(bool poof)
+{
+    const bool hadBackend = playerBackend_ && playerBackend_->active();
+    const glm::vec3 poofPosition = world_.marioBody().position + glm::vec3(0.0f, 32.0f, 0.0f);
+    shutdownAudio();
+    if (playerBackend_) {
+        playerBackend_->shutdown();
+        playerBackend_.reset();
+    }
+    activeRomSha1_.clear();
+    renderer_.clearMarioTexture();
+    world_.marioBody() = mario::MarioBody {};
+    replay_.clear();
+    if (poof && hadBackend) {
+        spawnPoof(poofPosition);
+    }
+}
+
+void SandboxApp::spawnPoof(glm::vec3 position)
+{
+    smoke_.clear();
+    for (int i = 0; i < 18; ++i) {
+        const float angle = static_cast<float>(i) * 0.34906585f;
+        const float ring = i % 3 == 0 ? 70.0f : 42.0f;
+        SmokeParticle particle;
+        particle.position = position;
+        particle.velocity = { std::sin(angle) * ring, 35.0f + static_cast<float>(i % 5) * 14.0f, std::cos(angle) * ring };
+        particle.lifetime = 0.85f + static_cast<float>(i % 4) * 0.12f;
+        particle.size = 12.0f + static_cast<float>(i % 4) * 4.0f;
+        smoke_.push_back(particle);
+    }
+}
+
+void SandboxApp::updatePoof(float dt)
+{
+    for (SmokeParticle& particle : smoke_) {
+        particle.age += dt;
+        particle.position += particle.velocity * dt;
+        particle.velocity *= std::pow(0.35f, dt);
+    }
+    smoke_.erase(std::remove_if(smoke_.begin(), smoke_.end(), [](const SmokeParticle& particle) {
+        return particle.age >= particle.lifetime;
+    }), smoke_.end());
+}
+
+void SandboxApp::drawRomOverlay()
+{
+    if (playerBackend_ && playerBackend_->active()) {
+        return;
+    }
+
+    ImGuiIO& io = ImGui::GetIO();
+    const ImVec2 center(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.42f);
+    const std::string message = debugState_.romStatus.empty() ? "Insert a ROM" : debugState_.romStatus;
+    const ImVec2 size = ImGui::CalcTextSize(message.c_str());
+    ImGui::SetNextWindowPos(ImVec2(center.x - size.x * 0.5f - 28.0f, center.y - 24.0f));
+    ImGui::SetNextWindowBgAlpha(0.72f);
+    ImGui::Begin("ROM Prompt", nullptr,
+        ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings
+            | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav);
+    ImGui::Text("%s", message.c_str());
+    ImGui::End();
 }
 
 bool SandboxApp::initializeAudio()
 {
-    if (!libSm64_.initializeAudio()) {
-        util::logWarn("libsm64 audio initialization failed");
+    if (!playerBackend_ || !playerBackend_->initializeAudio()) {
+        util::logWarn("backend audio initialization failed");
         return false;
     }
 
@@ -408,7 +544,7 @@ bool SandboxApp::initializeAudio()
 
 void SandboxApp::pumpAudio()
 {
-    if (audioDevice_ == 0 || !libSm64_.audioActive()) {
+    if (audioDevice_ == 0 || !playerBackend_ || !playerBackend_->audioActive()) {
         return;
     }
 
@@ -418,7 +554,7 @@ void SandboxApp::pumpAudio()
     }
 
     std::vector<std::int16_t> samples;
-    const std::uint32_t generatedSamples = libSm64_.tickAudio(queuedSamples, 1100U, samples);
+    const std::uint32_t generatedSamples = playerBackend_->tickAudio(queuedSamples, 1100U, samples);
     if (generatedSamples == 0 || samples.empty()) {
         return;
     }
@@ -467,8 +603,8 @@ void SandboxApp::loadDefaultMap()
 void SandboxApp::applyActiveMap()
 {
     currentMap_.applyTo(world_.collisionWorld());
-    if (libSm64_.active()) {
-        libSm64_.reloadSurfaces(world_.collisionWorld());
+    if (playerBackend_ && playerBackend_->active()) {
+        playerBackend_->reloadSurfaces(world_.collisionWorld());
     }
 }
 

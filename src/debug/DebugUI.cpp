@@ -61,6 +61,14 @@ void DebugUI::draw(physics::PhysicsWorld& world, TweakVars& tweaks, replay::Repl
     if (!state.backendStatus.empty()) {
         ImGui::TextWrapped("Backend: %s", state.backendStatus.c_str());
     }
+    ImGui::Text("ROM watcher: %s", state.romWatcherStatus.c_str());
+    ImGui::TextWrapped("ROM status: %s", state.romStatus.c_str());
+    ImGui::Text("ROM: %s", state.currentRomFilename.c_str());
+    ImGui::Text("Game: %s", state.currentRomGame.c_str());
+    ImGui::Text("SHA-1: %s", state.currentRomHash.c_str());
+    if (!state.romWarning.empty()) {
+        ImGui::TextWrapped("Warning: %s", state.romWarning.c_str());
+    }
     ImGui::Text("Action: %s", mario::actionName(body.action).data());
     vec3Text("Position", body.position);
     vec3Text("Velocity", body.velocity);

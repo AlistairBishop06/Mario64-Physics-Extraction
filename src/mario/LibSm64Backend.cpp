@@ -116,6 +116,21 @@ LibSm64Backend::~LibSm64Backend()
 bool LibSm64Backend::initialize(const std::filesystem::path& dllPath, const std::filesystem::path& romPath,
     const collision::CollisionWorld& collisionWorld)
 {
+    assets::RomImage rom;
+    rom.path = romPath;
+    rom.filename = romPath.filename().string();
+    rom.bytes = readAllBytes(romPath);
+    return initialize(dllPath, rom, collisionWorld);
+}
+
+bool LibSm64Backend::initialize(const assets::RomImage& rom, const collision::CollisionWorld& collisionWorld)
+{
+    return initialize(findDefaultLibrary(), rom, collisionWorld);
+}
+
+bool LibSm64Backend::initialize(const std::filesystem::path& dllPath, const assets::RomImage& rom,
+    const collision::CollisionWorld& collisionWorld)
+{
     shutdown();
 
     if (dllPath.empty() || !std::filesystem::exists(dllPath)) {
@@ -123,7 +138,7 @@ bool LibSm64Backend::initialize(const std::filesystem::path& dllPath, const std:
         return false;
     }
 
-    romBytes_ = readAllBytes(romPath);
+    romBytes_ = rom.bytes;
     if (romBytes_.empty()) {
         status_ = "SM64 US ROM not found/readable for libsm64 runtime.";
         return false;
@@ -193,6 +208,16 @@ std::uint32_t LibSm64Backend::tickAudio(std::uint32_t queuedSamples, std::uint32
     return samples;
 }
 
+int LibSm64Backend::textureWidth() const
+{
+    return kTextureWidth;
+}
+
+int LibSm64Backend::textureHeight() const
+{
+    return kTextureHeight;
+}
+
 void LibSm64Backend::setCameraLook(glm::vec3 look)
 {
     look.y = 0.0f;
@@ -209,8 +234,9 @@ void LibSm64Backend::reloadSurfaces(const collision::CollisionWorld& collisionWo
     loadSurfaces(collisionWorld);
 }
 
-void LibSm64Backend::tick(const MarioInput& input)
+void LibSm64Backend::tick(const MarioInput& input, float dt)
 {
+    (void)dt;
     if (!active_ || !api_) {
         return;
     }

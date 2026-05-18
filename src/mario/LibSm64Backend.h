@@ -1,8 +1,6 @@
 #pragma once
 
-#include "assets/RuntimeAssets.h"
-#include "collision/CollisionWorld.h"
-#include "mario/MarioState.h"
+#include "mario/PlayerBackend.h"
 
 #include <array>
 #include <cstdint>
@@ -12,25 +10,31 @@
 
 namespace sm64ps::mario {
 
-class LibSm64Backend {
+class LibSm64Backend final : public PlayerBackend {
 public:
     ~LibSm64Backend();
 
+    bool initialize(const assets::RomImage& rom, const collision::CollisionWorld& collisionWorld) override;
     bool initialize(const std::filesystem::path& dllPath, const std::filesystem::path& romPath,
         const collision::CollisionWorld& collisionWorld);
-    void shutdown();
-    void setCameraLook(glm::vec3 look);
-    void tick(const MarioInput& input);
-    void syncBody(MarioBody& body) const;
-    void reloadSurfaces(const collision::CollisionWorld& collisionWorld);
-    bool initializeAudio();
-    std::uint32_t tickAudio(std::uint32_t queuedSamples, std::uint32_t desiredSamples, std::vector<std::int16_t>& outSamples);
+    bool initialize(const std::filesystem::path& dllPath, const assets::RomImage& rom,
+        const collision::CollisionWorld& collisionWorld);
+    void shutdown() override;
+    void setCameraLook(glm::vec3 look) override;
+    void tick(const MarioInput& input, float dt) override;
+    void syncBody(MarioBody& body) const override;
+    void reloadSurfaces(const collision::CollisionWorld& collisionWorld) override;
+    bool initializeAudio() override;
+    std::uint32_t tickAudio(std::uint32_t queuedSamples, std::uint32_t desiredSamples,
+        std::vector<std::int16_t>& outSamples) override;
 
-    bool active() const { return active_; }
-    bool audioActive() const { return audioActive_; }
-    const std::string& status() const { return status_; }
-    const assets::Mesh& mesh() const { return mesh_; }
-    const std::vector<std::uint8_t>& textureRgba() const { return textureRgba_; }
+    bool active() const override { return active_; }
+    bool audioActive() const override { return audioActive_; }
+    const std::string& status() const override { return status_; }
+    const assets::Mesh* mesh() const override { return &mesh_; }
+    const std::vector<std::uint8_t>* textureRgba() const override { return &textureRgba_; }
+    int textureWidth() const override;
+    int textureHeight() const override;
 
     static std::filesystem::path findDefaultLibrary();
     static std::filesystem::path findDefaultRom();

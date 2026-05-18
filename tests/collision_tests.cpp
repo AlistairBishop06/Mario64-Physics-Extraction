@@ -21,7 +21,9 @@ int main()
     assert(resolved.onFloor);
     assert(resolved.correctedPosition.y == 0.0f);
 
+    const auto farFloor = world.findFloor({ 2100.0f, 2.0f, 2100.0f }, 8.0f);
+    assert(farFloor.has_value());
+
     std::cout << "collision tests passed\n";
     return 0;
 }
-

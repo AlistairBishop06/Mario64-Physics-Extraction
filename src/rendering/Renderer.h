@@ -14,7 +14,7 @@ public:
     bool initialize(SDL_Window* window);
     void shutdown();
     void setMarioTexture(const std::vector<std::uint8_t>& rgba, int width, int height);
-    void setCameraTarget(glm::vec3 target);
+    void followMarioCamera(const mario::MarioBody& body);
     void beginFrame(int width, int height);
     void drawCollision(const collision::CollisionWorld& collisionWorld);
     void drawMario(const mario::MarioBody& body, const assets::Mesh* mesh = nullptr);
@@ -26,6 +26,8 @@ private:
     SDL_GLContext context_ = nullptr;
     unsigned int marioTexture_ = 0;
     glm::vec3 cameraTarget_ { 0.0f, 14.0f, 0.0f };
+    glm::vec3 cameraPosition_ { 0.0f, 260.0f, -900.0f };
+    bool cameraInitialized_ = false;
 };
 
 } // namespace sm64ps::rendering

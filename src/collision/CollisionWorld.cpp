@@ -91,12 +91,22 @@ void CollisionWorld::addQuad(const glm::vec3& a, const glm::vec3& b, const glm::
 void CollisionWorld::buildTestArena()
 {
     clear();
-    addQuad({ -120.0f, 0.0f, -120.0f }, { 120.0f, 0.0f, -120.0f }, { 120.0f, 0.0f, 120.0f },
-        { -120.0f, 0.0f, 120.0f });
-    addQuad({ 20.0f, 0.0f, -40.0f }, { 80.0f, 0.0f, -40.0f }, { 80.0f, 35.0f, 40.0f },
-        { 20.0f, 35.0f, 40.0f }, surfaces::SurfaceType::Slippery);
-    addQuad({ -80.0f, 0.0f, 70.0f }, { -80.0f, 60.0f, 70.0f }, { -80.0f, 60.0f, -70.0f },
-        { -80.0f, 0.0f, -70.0f }, surfaces::SurfaceType::WallKickable);
+    addQuad({ -2500.0f, 0.0f, -2500.0f }, { 2500.0f, 0.0f, -2500.0f }, { 2500.0f, 0.0f, 2500.0f },
+        { -2500.0f, 0.0f, 2500.0f });
+
+    addQuad({ 450.0f, 0.0f, -800.0f }, { 1400.0f, 0.0f, -800.0f }, { 1400.0f, 380.0f, 450.0f },
+        { 450.0f, 380.0f, 450.0f }, surfaces::SurfaceType::Slippery);
+
+    addQuad({ -1350.0f, 0.0f, 950.0f }, { -1350.0f, 650.0f, 950.0f }, { -1350.0f, 650.0f, -950.0f },
+        { -1350.0f, 0.0f, -950.0f }, surfaces::SurfaceType::WallKickable);
+
+    addQuad({ -650.0f, 0.0f, -1350.0f }, { -250.0f, 0.0f, -1350.0f }, { -250.0f, 180.0f, -950.0f },
+        { -650.0f, 180.0f, -950.0f }, surfaces::SurfaceType::NotSlippery);
+    addQuad({ -250.0f, 180.0f, -950.0f }, { 250.0f, 180.0f, -950.0f }, { 250.0f, 180.0f, -450.0f },
+        { -250.0f, 180.0f, -450.0f }, surfaces::SurfaceType::NotSlippery);
+
+    addQuad({ 950.0f, 0.0f, 1050.0f }, { 1500.0f, 0.0f, 1050.0f }, { 1500.0f, 260.0f, 1600.0f },
+        { 950.0f, 260.0f, 1600.0f }, surfaces::SurfaceType::VerySlippery);
 }
 
 std::optional<SurfaceContact> CollisionWorld::findFloor(const glm::vec3& position, float snapDistance) const

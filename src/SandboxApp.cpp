@@ -93,6 +93,7 @@ int SandboxApp::run()
             timestep_.advance(elapsed, [&](float dt) {
                 if (libSm64_.active()) {
                     (void)dt;
+                    libSm64_.setCameraLook(mario::yawToForward(world_.marioBody().faceYaw));
                     libSm64_.tick(input);
                     libSm64_.syncBody(world_.marioBody());
                     world_.advanceFrame();
@@ -117,7 +118,7 @@ int SandboxApp::run()
         int width = 0;
         int height = 0;
         SDL_GetWindowSize(window_, &width, &height);
-        renderer_.setCameraTarget(world_.marioBody().position);
+        renderer_.followMarioCamera(world_.marioBody());
         renderer_.beginFrame(width, height);
         if (debugState_.drawCollision) {
             renderer_.drawCollision(world_.collisionWorld());

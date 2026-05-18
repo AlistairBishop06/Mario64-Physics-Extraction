@@ -1,5 +1,7 @@
 #include "rendering/Renderer.h"
 
+#include "mario/MarioMath.h"
+
 #include <SDL_opengl.h>
 
 #include <algorithm>
@@ -83,17 +85,29 @@ void Renderer::setMarioTexture(const std::vector<std::uint8_t>& rgba, int width,
         glGenTextures(1, &marioTexture_);
     }
     glBindTexture(GL_TEXTURE_2D, marioTexture_);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, rgba.data());
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void Renderer::setCameraTarget(glm::vec3 target)
+void Renderer::followMarioCamera(const mario::MarioBody& body)
 {
-    cameraTarget_ = target + glm::vec3(0.0f, 14.0f, 0.0f);
+    const glm::vec3 forward = mario::yawToForward(body.faceYaw);
+    const glm::vec3 desiredTarget = body.position + glm::vec3(0.0f, 105.0f, 0.0f);
+    const glm::vec3 desiredPosition = desiredTarget - forward * 850.0f + glm::vec3(0.0f, 260.0f, 0.0f);
+
+    if (!cameraInitialized_) {
+        cameraTarget_ = desiredTarget;
+        cameraPosition_ = desiredPosition;
+        cameraInitialized_ = true;
+        return;
+    }
+
+    cameraTarget_ += (desiredTarget - cameraTarget_) * 0.18f;
+    cameraPosition_ += (desiredPosition - cameraPosition_) * 0.10f;
 }
 
 void Renderer::beginFrame(int width, int height)
@@ -105,13 +119,12 @@ void Renderer::beginFrame(int width, int height)
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     const float aspect = height > 0 ? static_cast<float>(width) / static_cast<float>(height) : 1.0f;
-    const glm::mat4 projection = glm::perspective(glm::radians(55.0f), aspect, 1.0f, 900.0f);
+    const glm::mat4 projection = glm::perspective(glm::radians(50.0f), aspect, 5.0f, 8000.0f);
     glLoadMatrixf(glm::value_ptr(projection));
 
     glMatrixMode(GL_MODELVIEW);
-    const glm::vec3 cameraPosition = cameraTarget_ + glm::vec3(135.0f, 105.0f, 175.0f);
     const glm::mat4 view = glm::lookAt(
-        cameraPosition,
+        cameraPosition_,
         cameraTarget_,
         glm::vec3(0.0f, 1.0f, 0.0f));
     glLoadMatrixf(glm::value_ptr(view));
@@ -163,6 +176,7 @@ void Renderer::drawMario(const mario::MarioBody& body, const assets::Mesh* mesh)
         if (marioTexture_ != 0) {
             glEnable(GL_TEXTURE_2D);
             glBindTexture(GL_TEXTURE_2D, marioTexture_);
+            glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
         }
         glBegin(GL_TRIANGLES);
         for (const auto& meshVertex : mesh->vertices) {

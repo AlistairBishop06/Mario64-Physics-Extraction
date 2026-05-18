@@ -19,6 +19,7 @@ public:
     bool initialize(const std::filesystem::path& dllPath, const std::filesystem::path& romPath,
         const collision::CollisionWorld& collisionWorld);
     void shutdown();
+    void setCameraLook(glm::vec3 look);
     void tick(const MarioInput& input);
     void syncBody(MarioBody& body) const;
 
@@ -50,6 +51,7 @@ private:
     glm::vec3 lastPosition_ { 0.0f };
     glm::vec3 lastVelocity_ { 0.0f };
     float lastFaceAngle_ = 0.0f;
+    glm::vec3 cameraLook_ { 0.0f, 0.0f, 1.0f };
 
     std::vector<float> positions_;
     std::vector<float> normals_;

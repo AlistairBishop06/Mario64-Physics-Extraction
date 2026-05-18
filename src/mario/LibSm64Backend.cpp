@@ -7,6 +7,7 @@
 #include <fstream>
 
 #include <glm/common.hpp>
+#include <glm/geometric.hpp>
 
 #if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN
@@ -163,6 +164,14 @@ void LibSm64Backend::shutdown()
     unloadLibrary();
 }
 
+void LibSm64Backend::setCameraLook(glm::vec3 look)
+{
+    look.y = 0.0f;
+    if (glm::length(look) > 0.001f) {
+        cameraLook_ = glm::normalize(look);
+    }
+}
+
 void LibSm64Backend::tick(const MarioInput& input)
 {
     if (!active_ || !api_) {
@@ -170,8 +179,8 @@ void LibSm64Backend::tick(const MarioInput& input)
     }
 
     SM64MarioInputs sm64Input {};
-    sm64Input.camLookX = 0.0f;
-    sm64Input.camLookZ = 1.0f;
+    sm64Input.camLookX = cameraLook_.x;
+    sm64Input.camLookZ = cameraLook_.z;
     sm64Input.stickX = std::clamp(input.stick.x, -1.0f, 1.0f);
     sm64Input.stickY = std::clamp(input.stick.y, -1.0f, 1.0f);
     sm64Input.buttonA = input.jumpPressed ? 1 : 0;

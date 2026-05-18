@@ -39,5 +39,38 @@ inline SurfaceProperties propertiesFor(SurfaceType type)
     return { type, 1.0f, 1.0f, 0.0f, true, false };
 }
 
-} // namespace sm64ps::surfaces
+inline std::int16_t sm64SurfaceTypeFor(SurfaceType type)
+{
+    switch (type) {
+    case SurfaceType::Slippery: return 0x0014;
+    case SurfaceType::VerySlippery: return 0x0013;
+    case SurfaceType::NotSlippery: return 0x0015;
+    case SurfaceType::Lava: return 0x0001;
+    case SurfaceType::Quicksand: return 0x0026;
+    case SurfaceType::LedgeGrab: return 0x0000;
+    case SurfaceType::WallKickable: return 0x0068;
+    case SurfaceType::Default: break;
+    }
+    return 0x0000;
+}
 
+inline std::uint16_t sm64TerrainFor(SurfaceType type)
+{
+    switch (type) {
+    case SurfaceType::Slippery:
+    case SurfaceType::VerySlippery:
+        return 0x0006;
+    case SurfaceType::NotSlippery:
+    case SurfaceType::WallKickable:
+    case SurfaceType::Lava:
+        return 0x0001;
+    case SurfaceType::Quicksand:
+        return 0x0003;
+    case SurfaceType::LedgeGrab:
+    case SurfaceType::Default:
+        break;
+    }
+    return 0x0000;
+}
+
+} // namespace sm64ps::surfaces

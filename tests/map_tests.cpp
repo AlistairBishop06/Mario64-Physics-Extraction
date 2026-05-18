@@ -17,6 +17,14 @@ int main()
     map.applyTo(world);
     assert(world.triangles().size() == map.triangleCount());
     assert(world.findFloor({ 0.0f, 2.0f, 0.0f }, 8.0f).has_value());
+    assert(surfaces::sm64SurfaceTypeFor(surfaces::SurfaceType::Slippery) == 0x0014);
+    assert(surfaces::sm64SurfaceTypeFor(surfaces::SurfaceType::VerySlippery) == 0x0013);
+    assert(surfaces::sm64SurfaceTypeFor(surfaces::SurfaceType::NotSlippery) == 0x0015);
+    assert(surfaces::sm64SurfaceTypeFor(surfaces::SurfaceType::Lava) == 0x0001);
+    assert(surfaces::sm64SurfaceTypeFor(surfaces::SurfaceType::Quicksand) == 0x0026);
+    assert(surfaces::sm64SurfaceTypeFor(surfaces::SurfaceType::WallKickable) == 0x0068);
+    assert(surfaces::sm64TerrainFor(surfaces::SurfaceType::VerySlippery) == 0x0006);
+    assert(surfaces::sm64TerrainFor(surfaces::SurfaceType::Quicksand) == 0x0003);
 
     const auto validPath = std::filesystem::temp_directory_path() / "sm64ps_valid_map.json";
     {
@@ -65,4 +73,3 @@ int main()
     std::cout << "map tests passed\n";
     return 0;
 }
-

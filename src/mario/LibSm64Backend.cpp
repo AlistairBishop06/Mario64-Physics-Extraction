@@ -371,9 +371,9 @@ void LibSm64Backend::loadSurfaces(const collision::CollisionWorld& collisionWorl
 
     for (const auto& triangle : collisionWorld.triangles()) {
         SM64Surface surface {};
-        surface.type = 0;
+        surface.type = surfaces::sm64SurfaceTypeFor(triangle.type);
         surface.force = 0;
-        surface.terrain = 0;
+        surface.terrain = surfaces::sm64TerrainFor(triangle.type);
         const glm::vec3 vertices[] = { triangle.a, triangle.b, triangle.c };
         for (int i = 0; i < 3; ++i) {
             surface.vertices[i][0] = toSm64Coord(vertices[i].x);

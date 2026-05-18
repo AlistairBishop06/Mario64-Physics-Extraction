@@ -1,5 +1,6 @@
 #pragma once
 
+#include "assets/RuntimeAssets.h"
 #include "collision/CollisionWorld.h"
 #include "mario/MarioState.h"
 #include "rendering/DebugRenderer.h"
@@ -12,16 +13,19 @@ class Renderer {
 public:
     bool initialize(SDL_Window* window);
     void shutdown();
+    void setMarioTexture(const std::vector<std::uint8_t>& rgba, int width, int height);
+    void setCameraTarget(glm::vec3 target);
     void beginFrame(int width, int height);
     void drawCollision(const collision::CollisionWorld& collisionWorld);
-    void drawMario(const mario::MarioBody& body);
+    void drawMario(const mario::MarioBody& body, const assets::Mesh* mesh = nullptr);
     void drawDebugLines(const DebugRenderer& debugRenderer);
     void endFrame();
 
 private:
     SDL_Window* window_ = nullptr;
     SDL_GLContext context_ = nullptr;
+    unsigned int marioTexture_ = 0;
+    glm::vec3 cameraTarget_ { 0.0f, 14.0f, 0.0f };
 };
 
 } // namespace sm64ps::rendering
-

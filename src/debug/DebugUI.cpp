@@ -35,6 +35,9 @@ void DebugUI::draw(physics::PhysicsWorld& world, TweakVars& tweaks, replay::Repl
 
     ImGui::Begin("SM64 Physics Sandbox");
     ImGui::Text("Frame: %llu", static_cast<unsigned long long>(world.frame()));
+    if (!state.backendStatus.empty()) {
+        ImGui::TextWrapped("Backend: %s", state.backendStatus.c_str());
+    }
     ImGui::Text("Action: %s", mario::actionName(body.action).data());
     vec3Text("Position", body.position);
     vec3Text("Velocity", body.velocity);
@@ -108,4 +111,3 @@ void DebugUI::drawConsole()
 }
 
 } // namespace sm64ps::debug
-

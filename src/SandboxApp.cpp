@@ -63,6 +63,15 @@ bool SandboxApp::initialize()
         tweaks_.setNumber("dive_forward_speed", config.value("/movement/dive_forward_speed", 52.0));
     }
     tweaks_.applyTo(world_.marioController().tuning());
+    runtimeAssets_.loadFromDirectory("extracted");
+    const auto libSm64Path = mario::LibSm64Backend::findDefaultLibrary();
+    const auto libSm64Rom = mario::LibSm64Backend::findDefaultRom();
+    if (libSm64_.initialize(libSm64Path, libSm64Rom, world_.collisionWorld())) {
+        renderer_.setMarioTexture(libSm64_.textureRgba(), 64 * 11, 64);
+    } else {
+        util::logWarn(libSm64_.status());
+    }
+    debugState_.backendStatus = libSm64_.status();
     registerConsoleCommands();
     return true;
 }
@@ -82,7 +91,14 @@ int SandboxApp::run()
         const bool shouldStep = !debugState_.paused || debugState_.frameStepRequested;
         if (shouldStep) {
             timestep_.advance(elapsed, [&](float dt) {
-                world_.step(input, dt);
+                if (libSm64_.active()) {
+                    (void)dt;
+                    libSm64_.tick(input);
+                    libSm64_.syncBody(world_.marioBody());
+                    world_.advanceFrame();
+                } else {
+                    world_.step(input, dt);
+                }
                 if (debugState_.recording) {
                     replay_.record(world_.frame(), input, world_.marioBody());
                 }
@@ -101,11 +117,15 @@ int SandboxApp::run()
         int width = 0;
         int height = 0;
         SDL_GetWindowSize(window_, &width, &height);
+        renderer_.setCameraTarget(world_.marioBody().position);
         renderer_.beginFrame(width, height);
         if (debugState_.drawCollision) {
             renderer_.drawCollision(world_.collisionWorld());
         }
-        renderer_.drawMario(world_.marioBody());
+        const assets::Mesh* marioMesh = libSm64_.active()
+            ? &libSm64_.mesh()
+            : (runtimeAssets_.hasMarioMesh() ? &runtimeAssets_.marioMesh() : nullptr);
+        renderer_.drawMario(world_.marioBody(), marioMesh);
         renderer_.drawDebugLines(debugRenderer_);
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         renderer_.endFrame();
@@ -120,6 +140,7 @@ void SandboxApp::shutdown()
     ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext();
     renderer_.shutdown();
+    libSm64_.shutdown();
     if (window_) {
         SDL_DestroyWindow(window_);
         window_ = nullptr;
@@ -191,6 +212,9 @@ void SandboxApp::registerConsoleCommands()
     debugUi_.console().registerCommand("pause", "toggle pause", [this](const std::vector<std::string>&) {
         debugState_.paused = !debugState_.paused;
         return debug::ConsoleResult { true, debugState_.paused ? "paused" : "running" };
+    });
+    debugUi_.console().registerCommand("backend", "show active Mario backend", [this](const std::vector<std::string>&) {
+        return debug::ConsoleResult { true, libSm64_.status() };
     });
 }
 

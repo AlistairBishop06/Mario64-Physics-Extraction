@@ -1,7 +1,9 @@
 #pragma once
 
+#include "assets/RuntimeAssets.h"
 #include "debug/DebugUI.h"
 #include "debug/TweakVars.h"
+#include "mario/LibSm64Backend.h"
 #include "physics/FixedTimestep.h"
 #include "physics/PhysicsWorld.h"
 #include "rendering/DebugRenderer.h"
@@ -33,7 +35,8 @@ private:
     debug::DebugUiState debugState_;
     replay::ReplayTrack replay_;
     replay::ReplayTrack ghost_;
+    assets::RuntimeAssets runtimeAssets_;
+    mario::LibSm64Backend libSm64_;
 };
 
 } // namespace sm64ps
-

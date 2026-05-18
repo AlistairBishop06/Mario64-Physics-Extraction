@@ -69,9 +69,20 @@ bool RomExtractor::extractMovementData(const std::filesystem::path& romPath, con
         file << movementSeed.dump(2) << '\n';
     }
 
+    nlohmann::json assetManifest;
+    assetManifest["schema"] = "sm64ps.local_assets.v1";
+    assetManifest["source_rom_sha1"] = verification.sha1;
+    assetManifest["redistribution_allowed"] = false;
+    assetManifest["runtime_meshes"]["mario"] = "mario.obj";
+    assetManifest["note"] = "The app will load extracted/mario.obj when a local display-list extraction step writes it. Do not commit ROM-derived meshes.";
+
+    {
+        std::ofstream file(outputDirectory / "asset_manifest.json");
+        file << assetManifest.dump(2) << '\n';
+    }
+
     util::logInfo("Wrote local extraction metadata to ", outputDirectory.string());
     return true;
 }
 
 } // namespace sm64ps::assets
-

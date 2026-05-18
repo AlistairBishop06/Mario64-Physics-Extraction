@@ -18,6 +18,7 @@ struct DebugUiState {
     bool frameStepRequested = false;
     bool recording = true;
     int replayFrame = 0;
+    std::string backendStatus;
 };
 
 class DebugUI {
@@ -38,4 +39,3 @@ private:
 };
 
 } // namespace sm64ps::debug
-

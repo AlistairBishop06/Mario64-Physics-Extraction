@@ -60,6 +60,24 @@ Place a legally obtained ROM in `roms/`, then run:
 
 The current extractor verifies the SHA-1 hash against known SM64 retail ROM hashes and writes local JSON metadata plus movement tuning seed data. It is structured so later commits can add non-redistributable extraction logic without changing the application architecture.
 
+## Real Mario Runtime
+
+The sandbox can use `libsm64` for real SM64 Mario movement, animation, and ROM-backed Mario geometry. Build `libsm64` locally and place the resulting DLL at:
+
+```text
+third_party/libsm64/dist/sm64.dll
+```
+
+Then keep your US ROM in `roms/` and launch the sandbox. The Debug UI shows whether the active backend is the real `libsm64` backend or the local fallback.
+
+Helper script:
+
+```powershell
+.\tools\setup_libsm64.ps1
+```
+
+On Windows, upstream `libsm64` expects MSYS2/MinGW for its Makefile build. The helper script clones the source and builds it when `make` or `mingw32-make` is available.
+
 ## Project Structure
 
 ```text
@@ -84,4 +102,3 @@ tests/
 - Prefer small data structs and focused systems over large manager classes.
 - Treat extracted data as local generated output only.
 - Add tests for math helpers and movement transitions before refining controller accuracy.
-

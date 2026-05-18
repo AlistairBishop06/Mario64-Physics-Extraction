@@ -13,6 +13,7 @@ public:
 
     void reset();
     void step(const mario::MarioInput& input, float dt);
+    void advanceFrame();
 
     collision::CollisionWorld& collisionWorld() { return collisionWorld_; }
     const collision::CollisionWorld& collisionWorld() const { return collisionWorld_; }
@@ -33,4 +34,3 @@ private:
 };
 
 } // namespace sm64ps::physics
-

@@ -17,8 +17,12 @@ void PhysicsWorld::reset()
 void PhysicsWorld::step(const mario::MarioInput& input, float dt)
 {
     marioController_.update(marioBody_, input, collisionWorld_, dt);
+    advanceFrame();
+}
+
+void PhysicsWorld::advanceFrame()
+{
     ++frame_;
 }
 
 } // namespace sm64ps::physics
-

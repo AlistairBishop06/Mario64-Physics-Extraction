@@ -45,11 +45,13 @@ endif()
 
 add_library(sm64ps_core STATIC
     src/assets/RomExtractor.cpp
+    src/assets/RuntimeAssets.cpp
     src/collision/CollisionWorld.cpp
     src/debug/Console.cpp
     src/debug/TweakVars.cpp
     src/mario/ActionStateMachine.cpp
     src/mario/MarioController.cpp
+    src/mario/LibSm64Backend.cpp
     src/mario/MarioMath.cpp
     src/physics/FixedTimestep.cpp
     src/physics/PhysicsWorld.cpp
@@ -64,6 +66,7 @@ target_link_libraries(sm64ps_core
     PUBLIC
         glm::glm
         nlohmann_json::nlohmann_json
+        ${CMAKE_DL_LIBS}
     PRIVATE
         sm64ps_project_warnings
 )
